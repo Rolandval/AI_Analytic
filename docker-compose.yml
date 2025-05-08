@@ -22,55 +22,51 @@ services:
       timeout: 5s
       retries: 5
 
-  redis:
-    image: redis:7-alpine
-    restart: always
-    ports:
-      - "6379:6379"
-    networks:
-      - app_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+  # redis:
+  #   image: redis:7-alpine
+  #   restart: always
+  #   ports:
+  #     - "6379:6379"
+  #   networks:
+  #     - app_network
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 5s
+  #     timeout: 5s
+  #     retries: 5
 
-  celery_worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    command: celery -A app.celery_app worker --loglevel=info
-    volumes:
-      - .:/app
-    depends_on:
-      - postgres
-      - redis
-    networks:
-      - app_network
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - DATABASE_URL=postgresql://db_user:db_password@postgres:5432/db
+  # celery_worker:
+  #   build:
+  #     context: .
+  #   restart: always
+  #   command: celery -A app.celery_app worker --loglevel=info
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #   networks:
+  #     - app_network
+  #   environment:
+  #     - CELERY_BROKER_URL=redis://redis:6379/0
+  #     - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
-  celery_beat:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    command: celery -A app.celery_app beat --loglevel=info
-    volumes:
-      - .:/app
-    depends_on:
-      - postgres
-      - redis
-      - celery_worker
-    networks:
-      - app_network
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - DATABASE_URL=postgresql://db_user:db_password@postgres:5432/db
+  # celery_beat:
+  #   build:
+  #     context: .
+  #   restart: always
+  #   command: celery -A app.celery_app beat --loglevel=info
+  #   volumes:
+  #     - .:/app
+  #   depends_on:
+  #     - postgres
+  #     - redis
+  #     - celery_worker
+  #   networks:
+  #     - app_network
+  #   environment:
+  #     - CELERY_BROKER_URL=redis://redis:6379/0
+  #     - CELERY_RESULT_BACKEND=redis://redis:6379/0
 
 networks:
   app_network:

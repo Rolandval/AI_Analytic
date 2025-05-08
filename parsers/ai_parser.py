@@ -4,11 +4,11 @@ import google.generativeai as genai
 
 
 def ai_parser(csv_path: str, chunk_size: int = 50):
-    genai.configure(api_key="AIzaSyBTDRyFPscZuc1wuyvb-4hk7OCUbMnBN1s")  # Встав свій API ключ
+    genai.configure(api_key="AIzaSyCKnD__2XNCWUsF691R5ZCLgXS4h6ND-JA")
 
     # Використовуємо доступну модель gemini-1.5-flash або gemini-pro
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-pro",
+        model_name="gemini-1.5-flash",
         generation_config={
             "temperature": 0.3,
             "top_p": 1,
@@ -49,7 +49,7 @@ def ai_parser(csv_path: str, chunk_size: int = 50):
 
 📌 Деталі парсингу:
 - 'brand': поверни назву бренду одним словом
-- `price`: найменший оптовий
+- `price`: найменший оптовий, ціна завжди має бути(якщо немає то 0)
 - `name`: назва акумулятора між брендом і об'ємом(якщо пустий рядок то поверни в name назву бренду)
 - `c_amps`: пусковий струм(якщо немає то 0)
 - `region`: за замовчуванням EUROPE, якщо є "ASIA", то ASIA

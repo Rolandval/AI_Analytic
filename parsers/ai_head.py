@@ -1,8 +1,10 @@
 from parsers.ai_parser import ai_parser
 from helpers.csv_export import convert_to_csv
+from helpers.ai_filter import ai_filter
 
 
 def parse_ai_reports(file_path: str):
     csv_report = convert_to_csv(file_path)
-    result = ai_parser(csv_report)
+    ai_data = ai_parser(csv_report)
+    result = ai_filter(ai_data)
     return result

@@ -21,3 +21,12 @@ async def get_or_create_competitor(session: AsyncSession, suplier_name: str) -> 
     session.add(new_suplier)
     await session.flush()  
     return new_suplier.id
+
+
+async def get_competitors_name(func):
+    if func.__name__ == "parse_batteries_avto_zvuk":  
+        return "Авто Звук"
+    if func.__name__ == "parse_batteries_aku_lviv":  
+        return "Акумулятори Львів (aku.lviv)"
+    if func.__name__ == "parse_batteries_makb":  
+        return "MAKB"

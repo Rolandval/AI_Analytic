@@ -3,7 +3,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 from .models import Base
 
-DATABASE_URL = "postgresql+asyncpg://db_user:db_password@172.24.48.1:5432/db"
+DATABASE_URL = "postgresql+asyncpg://db_user:db_password@172.30.16.1:5432/db"
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 

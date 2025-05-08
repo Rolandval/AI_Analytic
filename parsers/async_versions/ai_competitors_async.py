@@ -1,6 +1,5 @@
 import asyncio
 import json
-import time
 import google.generativeai as genai
 from typing import List, Dict
 
@@ -8,7 +7,7 @@ from typing import List, Dict
 genai.configure(api_key="AIzaSyBTDRyFPscZuc1wuyvb-4hk7OCUbMnBN1s")  # Заміни на свій ключ
 
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
+    model_name="gemini-1.5-pro",
     generation_config={
         "temperature": 0.3,
         "top_p": 1,
@@ -18,7 +17,7 @@ model = genai.GenerativeModel(
 )
 
 
-def parse_chunk(index: int, data: Dict[str, str]) -> List[Dict]:
+async def parse_chunk(index: int, data: Dict[str, str]) -> List[Dict]:
     text = data["batteries"]
     prompt = f"""
 Діяй як професійний парсер і спеціаліст з продажу автомобільних акумуляторів.
@@ -53,7 +52,7 @@ def parse_chunk(index: int, data: Dict[str, str]) -> List[Dict]:
 """
 
     try:
-        response = model.generate_content(prompt)
+        response = await model.generate_content_async(prompt)
         response_text = response.text.strip()
 
         # Очищення
@@ -68,23 +67,24 @@ def parse_chunk(index: int, data: Dict[str, str]) -> List[Dict]:
 
     except Exception as e:
         print(f"❌ Помилка на блоці {index}: {e}")
+        print(f"Відповідь API: {response.text if 'response' in locals() else 'Немає відповіді'}")
         return []
 
 
 async def ai_parser(all_data: List[Dict[str, str]]) -> List[Dict]:
     parsed_results = []
-    min_request_time = 46
-    for i, data in enumerate(all_data):
-        start_time = time.time()
-        result = parse_chunk(i, data)
-        parsed_results.extend(result)
+    chunk_size = 2  # максимум 2 запити за раз
+    delay = 60      # інтервал між запитами у секундах
 
-        elapsed_time = time.time() - start_time
-        if elapsed_time < min_request_time and i < len(all_data) - 1:  # не чекаємо після останнього запиту
-            wait_time = min_request_time - elapsed_time
-            print(f"⏳ Запит виконано за {elapsed_time:.1f} сек. Очікування {wait_time:.1f} секунд перед наступним запитом...")
-            time.sleep(wait_time)
+    for i in range(0, len(all_data), chunk_size):
+        current_batch = all_data[i:i + chunk_size]
+        tasks = [parse_chunk(i + j, data) for j, data in enumerate(current_batch)]
+        results = await asyncio.gather(*tasks)
+        parsed_results.extend([item for sublist in results for item in sublist])
 
+        if i + chunk_size < len(all_data):  # уникаємо затримки після останнього батчу
+            print(f"⏳ Очікування {delay} секунд перед наступними {chunk_size} запитами...")
+            await asyncio.sleep(delay)
 
     return parsed_results
 

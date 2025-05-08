@@ -2,12 +2,18 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, status
 import tempfile, os
 from helpers.csv_export import convert_to_csv
 
-from services.batteries.controllers import process_batteries_import
+from services.batteries.controllers import process_batteries_import, process_batteries_import_parser
 from parsers.avto_apteka import parse_avto_apteka_xlsx
 from parsers.fop_ruslan import parse_fop_ruslan_xls
 from parsers.avto_alians import parse_avto_alians_doc
 from parsers.a_mega_auto import parse_a_mega_auto_xlsx
 from parsers.ai_head import parse_ai_reports
+
+from parsers.competitors.avto_zvuk import parse_batteries_avto_zvuk as parse_avto_zvuk
+from parsers.competitors.aku_lviv import parse_batteries_aku_lviv as parse_aku_lviv
+from parsers.competitors.makb import parse_batteries_makb as parse_makb
+from helpers.competitors import get_competitors_name
+
 router = APIRouter(prefix="/batteries", tags=["batteries"])
 
 @router.post("/upload/avto-apteka", summary="Загрузка з Авто Аптека xlsx")
@@ -177,3 +183,14 @@ async def upload_batteries_file(
         except Exception as e:
             # Якщо не вдалося видалити файл, просто логуємо помилку
             print(f"Не вдалося видалити тимчасовий файл: {str(e)}")
+
+@router.post("/ai_upload/parse_competitor")
+async def upload_batteries_file():
+    func_list =[]
+    func_list.append(parse_makb)
+    func_list.append(parse_avto_zvuk)
+    func_list.append(parse_aku_lviv)
+    for func in func_list:
+        supplier_name = await get_competitors_name(func)
+        await process_batteries_import_parser(func, supplier_name)
+    return {"detail": "Import completed"}

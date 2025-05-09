@@ -3,9 +3,13 @@ import json
 import time
 import google.generativeai as genai
 from typing import List, Dict
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
-genai.configure(api_key="AIzaSyBTDRyFPscZuc1wuyvb-4hk7OCUbMnBN1s")  # Заміни на свій ключ
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
@@ -38,7 +42,7 @@ def parse_chunk(index: int, data: Dict[str, str]) -> List[Dict]:
 
 📌 Деталі парсингу:
 - 'brand': поверни назву бренду одним словом
-- `price`: найменший оптовий
+- `price`: найменший оптовий (якщо неможкш знайти то 0
 - `name`: назва акумулятора між брендом і об'ємом(якщо пустий рядок то поверни в name назву бренду)
 - `c_amps`: пусковий струм(якщо немає то 0)
 - `region`: за замовчуванням EUROPE, якщо є "ASIA", то ASIA
@@ -73,7 +77,7 @@ def parse_chunk(index: int, data: Dict[str, str]) -> List[Dict]:
 
 async def ai_parser(all_data: List[Dict[str, str]]) -> List[Dict]:
     parsed_results = []
-    min_request_time = 46
+    min_request_time = 10
     for i, data in enumerate(all_data):
         start_time = time.time()
         result = parse_chunk(i, data)

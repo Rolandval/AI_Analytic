@@ -6,6 +6,7 @@ import asyncio
 from db.database import SessionLocal, engine, init_db, get_session
 
 from services.batteries.views import router as batteries_router
+from services.backend.views import router as backend_router
 
 app = FastAPI()
 
@@ -33,3 +34,4 @@ async def startup_db_client():
 
 
 app.include_router(batteries_router)
+app.include_router(backend_router)

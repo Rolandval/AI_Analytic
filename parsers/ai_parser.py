@@ -1,10 +1,14 @@
 import csv
 import json
 import google.generativeai as genai
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
 def ai_parser(csv_path: str, chunk_size: int = 50):
-    genai.configure(api_key="AIzaSyCKnD__2XNCWUsF691R5ZCLgXS4h6ND-JA")
+    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
     # Використовуємо доступну модель gemini-1.5-flash або gemini-pro
     model = genai.GenerativeModel(
@@ -13,7 +17,7 @@ def ai_parser(csv_path: str, chunk_size: int = 50):
             "temperature": 0.3,
             "top_p": 1,
             "top_k": 40,
-            "max_output_tokens": 500000
+            "max_output_tokens": 999999
         }
     )
     results = []

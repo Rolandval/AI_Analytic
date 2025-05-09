@@ -6,15 +6,12 @@ import sys
 from typing import List, Tuple
 import random
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from helpers.get_user_agent import get_headers
 
 
 def get_page_url(page: int) -> str:
-    if page == 1:
-        return "https://makb.com.ua/akkumuliatory-legkovye/brand-bosch-or-exide-or-fiamm-or-platin-or-plazma-or-rocket-or-varta-or-westa"
-    page_num = (page - 1) * 24
-    return f"https://makb.com.ua/akkumuliatory-legkovye/brand-bosch-or-exide-or-fiamm-or-platin-or-plazma-or-rocket-or-varta-or-westa?per_page={page_num}"
+    return f"https://akumulyator.center/avtomobilni-akumulyatori/avtomobilni-akumulyatori/page-{page}/"
 
 
 async def fetch_html(session: aiohttp.ClientSession, url: str, page_num: int) -> Tuple[str, int]:
@@ -31,34 +28,43 @@ async def fetch_html(session: aiohttp.ClientSession, url: str, page_num: int) ->
         print(f"❌ Помилка на сторінці {page_num}: {e}")
         return "", page_num
 
-
 async def get_last_page() -> int:
     headers = get_headers()
     async with aiohttp.ClientSession(headers=headers) as session:
-        url = "https://makb.com.ua/akkumuliatory-legkovye/brand-bosch-or-exide-or-fiamm-or-platin-or-plazma-or-rocket-or-varta-or-westa"
+        url = "https://akumulyator.center/avtomobilni-akumulyatori/avtomobilni-akumulyatori/"
         html, _ = await fetch_html(session, url, 0)
         soup = BeautifulSoup(html, 'html.parser')
-        pagination_div = soup.find("div", class_="content__pagination")
+        a = soup.find("a", class_="cm-history ty-pagination__item hidden-phone ty-pagination__range cm-ajax")
+        it = True
+        last_page = 1
+        if a:
+            href = a["href"]
+            while it:
+                html, _ = await fetch_html(session, href, 0)
+                soup = BeautifulSoup(html, 'html.parser')
+                pagination_div = soup.find("div", class_="ty-pagination")
+                a = pagination_div.find("a", class_="cm-history ty-pagination__item hidden-phone ty-pagination__range cm-ajax")
+                if a:
+                    href = a["href"]
+                    continue
+                last_span = soup.find("span", class_="ty-pagination__selected")
+                last_page = last_span.text.strip()
+                it = False
+        return int(last_page) + 1
 
-        if not pagination_div:
-            return 1
-
-        last_element = pagination_div.find("li", class_="paginator__item paginator__item--last")
-        last_page = last_element.find("a").text.strip()
-        last_page_text = ''.join(c for c in last_page if c.isdigit())
-        return int(last_page_text)
 
 def extract_batteries_links_from_html(html: str) -> List[str]:
     soup = BeautifulSoup(html, 'html.parser')
-    container = soup.find("div", class_="col-sm-8 col-md-9")
+    container = soup.find("div", class_="grid-list")
     if not container:
         print("⚠️ Контейнер не знайдено")
         return []
-    batteries = container.find_all("div", class_="col-xs-6 col-sm-6 col-md-4 col-lg-3")
+    batteries = container.find_all("div", class_="ty-column4")
     batteries_links = []
     for battery in batteries:
-        link_div = battery.find("a", class_="product-cut__title-link")
-        batteries_links.append(link_div["href"])
+        link_div = battery.find("div", class_="ut2-gl__name")
+        if link_div:
+            batteries_links.append(link_div.find("a")["href"])
     return batteries_links
 
 async def fetch_battery_details(session: aiohttp.ClientSession, url: str):
@@ -74,24 +80,17 @@ async def fetch_battery_details(session: aiohttp.ClientSession, url: str):
             html = await response.text()
             soup = BeautifulSoup(html, 'html.parser')
             
-            battery_details = ""
-            battery_details_div = soup.find("div", class_="product-fullinfo")
-            divs = battery_details_div.find_all("div", class_="product-fullinfo__item")
-            for div in divs:
-                o = div.find("div", class_="product-fullinfo__title")
-                if o:
-                    properties = div.find("div", class_="properties")
-                    battery_details = properties
+            battery_details_div = soup.find("div", class_="cm-ab-similar-filter-container fg-two-col")
 
 
             price_div = soup.find("div", {
-                "class": "product-intro__price"
+                "class": "ty-product-prices"
             })
             name_div = soup.find("div", {
-                "class": "content__header content__header--xs"
+                "class": "ut2-pb__title"
             })
             
-            return [name_div, price_div, battery_details]
+            return [name_div, price_div, battery_details_div]
     except Exception as e:
         print(f"❌ Помилка при отриманні деталей {url}: {e}")
         return None
@@ -116,7 +115,8 @@ async def extract_batteries_html(session: aiohttp.ClientSession, links: List[str
     
     return {"page_num": page_num, "batteries": batteries}
 
-async def parse_batteries_makb() -> List[str]:
+
+async def parse_batteries_me() -> List[str]:
     headers = get_headers()
     last_page = await get_last_page()
     all_batteries = []
@@ -140,5 +140,7 @@ async def parse_batteries_makb() -> List[str]:
 
 
 # if __name__ == "__main__":
-#     last_page = asyncio.run(parse_batteries_makb())
+#     last_page = asyncio.run(parse_batteries_me())
 #     print(last_page)
+
+        

@@ -11,7 +11,7 @@ from helpers.get_user_agent import get_headers
 
 
 def get_page_url(page: int) -> str:
-    return f"https://avtozvuk.ua/ua/avtomobilnye-akkumulyatory/c300/page{page}/"
+    return f"https://avtozvuk.ua/ua/avtomobilnye-akkumulyatory/c300/5000=50109;5000=50507;5000=50623;5000=50643;5000=50766;5000=50833;5000=51044;5000=51056;5000=52020;5000=82099;5000=83457/page{page}/"
 
 
 async def fetch_html(session: aiohttp.ClientSession, url: str, page_num: int) -> Tuple[str, int]:
@@ -32,7 +32,7 @@ async def fetch_html(session: aiohttp.ClientSession, url: str, page_num: int) ->
 async def get_last_page() -> int:
     headers = get_headers()
     async with aiohttp.ClientSession(headers=headers) as session:
-        url = "https://avtozvuk.ua/ua/avtomobilnye-akkumulyatory/c300"
+        url = "https://avtozvuk.ua/ua/avtomobilnye-akkumulyatory/c300/5000=50109;5000=50507;5000=50623;5000=50643;5000=50766;5000=50833;5000=51044;5000=51056;5000=52020;5000=82099;5000=83457"
         html, _ = await fetch_html(session, url, 0)
         soup = BeautifulSoup(html, 'html.parser')
         pagination_div = soup.find("div", class_="pagination load-more-pagination__pagination")
@@ -124,7 +124,7 @@ async def parse_batteries_avto_zvuk() -> List[str]:
 
     async with aiohttp.ClientSession(headers=headers) as session:
         tasks = []
-        for i in range(1, 3):
+        for i in range(1, last_page + 1):
             url = get_page_url(i)
             tasks.append(fetch_html(session, url, i))
             await asyncio.sleep(random.uniform(0.1, 0.3))  # антиспам-пауза

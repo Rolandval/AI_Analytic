@@ -15,7 +15,7 @@ def get_headers():
         'User-Agent': random.choice(user_agents),
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'uk,en-US;q=0.7,en;q=0.3',
-        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Encoding': 'gzip, deflate',
         'Connection': 'keep-alive',
         'Referer': 'https://akbcenter.com.ua/',
         'Upgrade-Insecure-Requests': '1',

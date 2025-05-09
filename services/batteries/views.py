@@ -2,11 +2,11 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, status
 import tempfile, os
 from helpers.csv_export import convert_to_csv
 
-from services.batteries.controllers import process_batteries_import, process_batteries_import_parser
-from parsers.avto_apteka import parse_avto_apteka_xlsx
-from parsers.fop_ruslan import parse_fop_ruslan_xls
-from parsers.avto_alians import parse_avto_alians_doc
-from parsers.a_mega_auto import parse_a_mega_auto_xlsx
+from services.batteries.controllers import process_batteries_import, process_batteries_import_parser, me_parser
+from parsers.async_versions.avto_apteka import parse_avto_apteka_xlsx
+from parsers.async_versions.fop_ruslan import parse_fop_ruslan_xls
+from parsers.async_versions.avto_alians import parse_avto_alians_doc
+from parsers.async_versions.a_mega_auto import parse_a_mega_auto_xlsx
 from parsers.ai_head import parse_ai_reports
 
 from parsers.competitors.avto_zvuk import parse_batteries_avto_zvuk as parse_avto_zvuk
@@ -14,95 +14,97 @@ from parsers.competitors.aku_lviv import parse_batteries_aku_lviv as parse_aku_l
 from parsers.competitors.makb import parse_batteries_makb as parse_makb
 from helpers.competitors import get_competitors_name
 
-router = APIRouter(prefix="/batteries", tags=["batteries"])
+from parsers.me_parser import parse_batteries_me as parse_me
 
-@router.post("/upload/avto-apteka", summary="Загрузка з Авто Аптека xlsx")
-async def upload_batteries_file(
-    xlsx_file: UploadFile = File(...),
-):
-    supplier_name = "Авто Аптека"
-    if not xlsx_file.filename.lower().endswith(('.xlsx', '.xls')):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
-    # Save to temp file
-    suffix = os.path.splitext(xlsx_file.filename)[1]
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-    try:
-        content = await xlsx_file.read()
-        tmp.write(content)
-        tmp.close()
-        # Process import
-        await process_batteries_import(tmp.name, parse_avto_apteka_xlsx, supplier_name)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-    finally:
-        os.unlink(tmp.name)
-    return {"detail": "Import completed"}
+router = APIRouter(prefix="/upload_batteries", tags=["uploads/exports"])
 
-@router.post("/upload/fop-ruslan", summary="Загрузка з ФОП Руслан xls")
-async def upload_batteries_file(
-    xls_file: UploadFile = File(...),
-):
-    supplier_name = "ФОП Руслан"
-    if not xls_file.filename.lower().endswith(('.xlsx', '.xls')):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
-    # Save to temp file
-    suffix = os.path.splitext(xls_file.filename)[1]
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-    try:
-        content = await xls_file.read()
-        tmp.write(content)
-        tmp.close()
-        # Process import
-        await process_batteries_import(tmp.name, parse_fop_ruslan_xls, supplier_name)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-    finally:
-        os.unlink(tmp.name)
-    return {"detail": "Import completed"}
+# @router.post("/upload/avto-apteka", summary="Загрузка з Авто Аптека xlsx")
+# async def upload_batteries_file(
+#     xlsx_file: UploadFile = File(...),
+# ):
+#     supplier_name = "Авто Аптека"
+#     if not xlsx_file.filename.lower().endswith(('.xlsx', '.xls')):
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
+#     # Save to temp file
+#     suffix = os.path.splitext(xlsx_file.filename)[1]
+#     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+#     try:
+#         content = await xlsx_file.read()
+#         tmp.write(content)
+#         tmp.close()
+#         # Process import
+#         await process_batteries_import(tmp.name, parse_avto_apteka_xlsx, supplier_name)
+#     except Exception as e:
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+#     finally:
+#         os.unlink(tmp.name)
+#     return {"detail": "Import completed"}
 
-@router.post("/upload/avto-alians", summary="Загрузка з Авто Альянс doc")
-async def upload_batteries_file(
-    doc_file: UploadFile = File(...),
-):
-    supplier_name = "АвтоАльянс"
-    if not doc_file.filename.lower().endswith('.doc'):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
-    # Save to temp file
-    suffix = os.path.splitext(doc_file.filename)[1]
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-    try:
-        content = await doc_file.read()
-        tmp.write(content)
-        tmp.close()
-        # Process import
-        await process_batteries_import(tmp.name, parse_avto_alians_doc, supplier_name)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-    finally:
-        os.unlink(tmp.name)
-    return {"detail": "Import completed"}
+# @router.post("/upload/fop-ruslan", summary="Загрузка з ФОП Руслан xls")
+# async def upload_batteries_file(
+#     xls_file: UploadFile = File(...),
+# ):
+#     supplier_name = "ФОП Руслан"
+#     if not xls_file.filename.lower().endswith(('.xlsx', '.xls')):
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
+#     # Save to temp file
+#     suffix = os.path.splitext(xls_file.filename)[1]
+#     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+#     try:
+#         content = await xls_file.read()
+#         tmp.write(content)
+#         tmp.close()
+#         # Process import
+#         await process_batteries_import(tmp.name, parse_fop_ruslan_xls, supplier_name)
+#     except Exception as e:
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+#     finally:
+#         os.unlink(tmp.name)
+#     return {"detail": "Import completed"}
 
-@router.post("/upload/a-mega-avto", summary="Загрузка з А-мега Авто xlsx")
-async def upload_batteries_file(
-    doc_file: UploadFile = File(...),
-):
-    supplier_name = "А-мегаАвто"
-    if not doc_file.filename.lower().endswith('.xlsx'):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
-    # Save to temp file
-    suffix = os.path.splitext(doc_file.filename)[1]
-    tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
-    try:
-        content = await doc_file.read() 
-        tmp.write(content)
-        tmp.close()
-        # Process import
-        await process_batteries_import(tmp.name, parse_a_mega_auto_xlsx, supplier_name)
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-    finally:
-        os.unlink(tmp.name)
-    return {"detail": "Import completed"}
+# @router.post("/upload/avto-alians", summary="Загрузка з Авто Альянс doc")
+# async def upload_batteries_file(
+#     doc_file: UploadFile = File(...),
+# ):
+#     supplier_name = "АвтоАльянс"
+#     if not doc_file.filename.lower().endswith('.doc'):
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
+#     # Save to temp file
+#     suffix = os.path.splitext(doc_file.filename)[1]
+#     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+#     try:
+#         content = await doc_file.read()
+#         tmp.write(content)
+#         tmp.close()
+#         # Process import
+#         await process_batteries_import(tmp.name, parse_avto_alians_doc, supplier_name)
+#     except Exception as e:
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+#     finally:
+#         os.unlink(tmp.name)
+#     return {"detail": "Import completed"}
+
+# @router.post("/upload/a-mega-avto", summary="Загрузка з А-мега Авто xlsx")
+# async def upload_batteries_file(
+#     doc_file: UploadFile = File(...),
+# ):
+#     supplier_name = "А-мегаАвто"
+#     if not doc_file.filename.lower().endswith('.xlsx'):
+#         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file type")
+#     # Save to temp file
+#     suffix = os.path.splitext(doc_file.filename)[1]
+#     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+#     try:
+#         content = await doc_file.read() 
+#         tmp.write(content)
+#         tmp.close()
+#         # Process import
+#         await process_batteries_import(tmp.name, parse_a_mega_auto_xlsx, supplier_name)
+#     except Exception as e:
+#         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+#     finally:
+#         os.unlink(tmp.name)
+#     return {"detail": "Import completed"}
 
 @router.post("/ai_upload/convert_to_csv")
 async def upload_batteries_file(
@@ -193,4 +195,10 @@ async def upload_batteries_file():
     for func in func_list:
         supplier_name = await get_competitors_name(func)
         await process_batteries_import_parser(func, supplier_name)
+    return {"detail": "Import completed"}
+
+@router.post("/ai_upload/parse_me")
+async def upload_batteries_from_me():
+    supplier_name = "Акумулятор центр"
+    await me_parser(parse_me, supplier_name)
     return {"detail": "Import completed"}

@@ -2,9 +2,13 @@ import json
 import time
 import google.generativeai as genai
 from typing import List, Dict
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 
-genai.configure(api_key="AIzaSyBTDRyFPscZuc1wuyvb-4hk7OCUbMnBN1s")  # Заміни на свій ключ
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 model = genai.GenerativeModel(
     model_name="gemini-1.5-flash",
@@ -48,10 +52,10 @@ def parse_chunk(index, data) -> List[Dict]:
 - дані поверни в форматі - 
 - "brand": brand
 - "name": name
-- "volume": volume
+- "volume": volume(float)
 - "full_name": full_name
-- "price": price
-- "c_amps": c_amps
+- "price": price(float)
+- "c_amps": c_amps(int)
 - "region": region
 - "polarity": polarity
 - "electrolyte": electrolyte

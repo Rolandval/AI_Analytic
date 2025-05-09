@@ -1,0 +1,71 @@
+/* Загальні стилі */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+}
+
+/* Стилі для таблиці */
+.MuiTableContainer-root {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.MuiTableHead-root {
+  background-color: #f5f5f5;
+}
+
+.MuiTableRow-root:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+/* Стилі для форм */
+.MuiPaper-root {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+}
+
+.MuiPaper-root:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Стилі для кнопок */
+.MuiButton-root {
+  text-transform: none;
+  border-radius: 8px;
+  transition: transform 0.2s ease;
+}
+
+.MuiButton-contained:hover {
+  transform: translateY(-2px);
+}
+
+/* Стилі для заголовків */
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 1rem;
+}
+
+/* Стилі для Select компонентів */
+.basic-multi-select, .basic-select {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+/* Анімація для індикаторів завантаження */
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.loading-pulse {
+  animation: pulse 1.5s infinite ease-in-out;
+}

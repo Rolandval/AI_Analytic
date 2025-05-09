@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import asyncio
+from fastapi.middleware.cors import CORSMiddleware
 
 from db.database import SessionLocal, engine, init_db, get_session
 
@@ -9,6 +10,15 @@ from services.batteries.views import router as batteries_router
 from services.backend.views import router as backend_router
 
 app = FastAPI()
+
+# Додаємо CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Дозволяємо запити з React-додатку
+    allow_credentials=True,
+    allow_methods=["*"],  # Дозволяємо всі методи
+    allow_headers=["*"],  # Дозволяємо всі заголовки
+)
 
 @app.on_event("startup")
 async def startup_db_client():

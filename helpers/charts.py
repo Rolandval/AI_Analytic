@@ -1,3 +1,6 @@
+import matplotlib
+# Встановлюємо бекенд Agg, який не потребує графічного інтерфейсу
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from datetime import datetime
 import io
@@ -78,10 +81,20 @@ def plot_combined_price_chart(datasets: list[dict], normalize: bool = False):
 
     plt.title(f"{'Price Growth Rate' if normalize else 'Battery Price'} Comparison: {battery_name}")
     plt.xlabel("Date")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
+    
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    handles2, labels2 = (ax2.get_legend_handles_labels() if normalize else ([], []))
+    all_handles = handles1 + handles2
+    all_labels = labels1 + labels2
 
+    plt.subplots_adjust(bottom=0.2)  # Збільшуємо простір внизу для легенди
+    plt.legend(all_handles, all_labels, loc='upper center', bbox_to_anchor=(0.5, -0.15),
+               ncol=min(len(supplier_data), 3),
+               frameon=True, fancybox=True, shadow=True)
+    
+    plt.grid(True)
+    # Не використовуємо tight_layout, оскільки він може конфліктувати з subplots_adjust
+    
     # Зберігаємо в памʼять
     buf = io.BytesIO()
     plt.savefig(buf, format='png')

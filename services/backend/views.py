@@ -26,9 +26,12 @@ async def get_current_batteries_data(data: CurrentBattery):
         supplier_ids=data.supplier_ids,
         volumes=data.volumes,
         polarities=data.polarities,
+        regions=data.regions,
+        electrolytes=data.electrolytes,
         c_amps=data.c_amps,
         page=data.page,
         page_size=data.page_size,
+        price_diapason=data.price_diapason,
         sort_by=data.sort_by,
         sort_order=data.sort_order,
     )

@@ -1,6 +1,6 @@
 import pandas as pd
 import os
-import textract
+# import textract
 import PyPDF2
 from docx import Document
 import logging

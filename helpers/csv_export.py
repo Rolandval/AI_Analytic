@@ -11,7 +11,7 @@ import csv
 import openpyxl
 import xlrd
 import subprocess
-import win32com.client
+# import win32com.client
 
 
 
@@ -48,7 +48,8 @@ def convert_to_csv(input_path, output_path=None):
         elif ext == '.docx':
             _convert_docx_to_csv(input_path, output_path)
         elif ext == '.doc':
-            convert_doc_to_csv(input_path, output_path)
+            # convert_doc_to_csv(input_path, output_path)
+            raise ValueError(f"Формат {ext} не підтримується!")
         elif ext == '.pdf':
             _convert_pdf_to_csv(input_path, output_path)
         else:
@@ -254,41 +255,41 @@ def _convert_docx_to_csv(input_path, output_path):
                 if line.strip():
                     writer.writerow([line.strip()])
 
-def convert_doc_to_csv(input_path, output_path):
-    """Зчитує таблиці з .doc (або .docx) і експортує у CSV"""
-    word = win32com.client.Dispatch("Word.Application")
-    word.Visible = False  # не показуємо вікно Word
+# def convert_doc_to_csv(input_path, output_path):
+#     """Зчитує таблиці з .doc (або .docx) і експортує у CSV"""
+#     word = win32com.client.Dispatch("Word.Application")
+#     word.Visible = False  # не показуємо вікно Word
 
-    try:
-        doc = word.Documents.Open(doc_path)
-        tables = doc.Tables
+#     try:
+#         doc = word.Documents.Open(doc_path)
+#         tables = doc.Tables
 
-        if tables.Count == 0:
-            print("❌ У документі немає таблиць.")
-            return
+#         if tables.Count == 0:
+#             print("❌ У документі немає таблиць.")
+#             return
 
-        with open(csv_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f)
+#         with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+#             writer = csv.writer(f)
 
-            for t_index, table in enumerate(tables):
-                writer.writerow([f"=== Таблиця {t_index + 1} ==="])
+#             for t_index, table in enumerate(tables):
+#                 writer.writerow([f"=== Таблиця {t_index + 1} ==="])
 
-                for row in range(1, table.Rows.Count + 1):
-                    row_data = []
-                    for col in range(1, table.Columns.Count + 1):
-                        cell_text = table.Cell(row, col).Range.Text
-                        clean_text = cell_text.replace('\r\x07', '').strip()
-                        row_data.append(clean_text)
-                    writer.writerow(row_data)
+#                 for row in range(1, table.Rows.Count + 1):
+#                     row_data = []
+#                     for col in range(1, table.Columns.Count + 1):
+#                         cell_text = table.Cell(row, col).Range.Text
+#                         clean_text = cell_text.replace('\r\x07', '').strip()
+#                         row_data.append(clean_text)
+#                     writer.writerow(row_data)
 
-        print(f"✅ Таблиці збережено у CSV: {csv_path}")
+#         print(f"✅ Таблиці збережено у CSV: {csv_path}")
 
-    except Exception as e:
-        print(f"❌ Помилка при обробці файлу: {e}")
+#     except Exception as e:
+#         print(f"❌ Помилка при обробці файлу: {e}")
 
-    finally:
-        doc.Close(False)
-        word.Quit()
+#     finally:
+#         doc.Close(False)
+#         word.Quit()
 
 def _convert_pdf_to_csv(input_path, output_path):
     """Конвертує PDF файл у CSV формат"""

@@ -1,0 +1,29 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Аргумент для вибору файлу вимог
+ARG REQUIREMENTS_FILE=requirements.docker.txt
+
+# Встановлюємо залежності для збірки psycopg2 та інших пакетів
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    libpq-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копіюємо файл залежностей
+COPY ${REQUIREMENTS_FILE} requirements.txt
+
+# Встановлюємо залежності
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Копіюємо весь код проекту
+COPY . .
+
+# Відкриваємо порт для FastAPI
+EXPOSE 8000
+
+# Команда для запуску FastAPI
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

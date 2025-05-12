@@ -1,0 +1,46 @@
+# Основні залежності FastAPI
+fastapi==0.115.12
+uvicorn==0.34.2
+starlette==0.46.2
+pydantic==2.11.3
+python-multipart==0.0.20
+
+# Бази даних
+SQLAlchemy==2.0.40
+alembic==1.15.2
+psycopg2-binary==2.9.10  # Використовуємо бінарну версію замість psycopg2
+asyncpg==0.30.0
+
+# Обробка даних
+pandas==2.2.3
+numpy==2.2.5
+matplotlib==3.10.3
+openpyxl==3.1.5
+xlrd==1.2.0
+XlsxWriter==3.2.3
+PyPDF2==3.0.1
+python-docx==1.1.2
+
+# Інтеграції
+requests==2.32.3
+celery==5.5.2
+Jinja2==3.1.6
+pillow==11.2.1
+tqdm==4.67.1
+python-dotenv==1.1.0
+
+# Інші корисні пакети
+beautifulsoup4==4.8.2
+lxml==5.4.0
+
+# Google Generative AI (Gemini)
+google-generativeai==0.8.5
+google-api-core==2.24.2
+google-api-python-client==2.169.0
+google-auth==2.39.0
+googleapis-common-protos==1.70.0
+protobuf==5.29.4
+
+# Веб-скрапінг
+aiohttp==3.11.18
+aiohappyeyeballs==2.6.1

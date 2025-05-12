@@ -1,9 +1,17 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
 from .models import Base
 
-DATABASE_URL = "postgresql+asyncpg://db_user:db_password@172.30.16.1:5432/db"
+# Завантаження змінних середовища
+load_dotenv()
+
+# Отримуємо URL бази даних з змінних середовища або використовуємо значення за замовчуванням
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://db_user:db_password@172.30.16.1:5432/db")
+
+print(f"Using database connection: {DATABASE_URL}")
 
 engine = create_async_engine(DATABASE_URL, echo=True)
 

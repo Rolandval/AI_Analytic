@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:8000';
+// Використовуємо змінну середовища або значення за замовчуванням
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
+console.log('Using API URL:', API_URL);
 
 // Створюємо екземпляр axios з базовим URL
 const api = axios.create({

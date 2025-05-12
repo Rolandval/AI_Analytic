@@ -2,9 +2,14 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 import asyncio
+import os
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
 from db.database import SessionLocal, engine, init_db, get_session
+
+# Завантаження змінних середовища з .env файлу
+load_dotenv()
 
 from services.batteries.views import router as batteries_router
 from services.backend.views import router as backend_router
@@ -12,9 +17,12 @@ from services.backend.views import router as backend_router
 app = FastAPI()
 
 # Додаємо CORS middleware
+# Отримуємо дозволені джерела з змінних середовища або використовуємо значення за замовчуванням
+cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Дозволяємо запити з React-додатку
+    allow_origins=cors_origins,  # Дозволяємо запити з вказаних джерел
     allow_credentials=True,
     allow_methods=["*"],  # Дозволяємо всі методи
     allow_headers=["*"],  # Дозволяємо всі заголовки
@@ -42,6 +50,11 @@ async def startup_db_client():
 #         "updated_at": p.updated_at.isoformat() if p.updated_at else None
 #     } for p in products]
 
+
+# Додаємо ендпоінт для перевірки здоров'я
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 app.include_router(batteries_router)
 app.include_router(backend_router)

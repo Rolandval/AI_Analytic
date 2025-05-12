@@ -1,0 +1,18 @@
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Копіюємо файли залежностей
+COPY package.json package-lock.json ./
+
+# Встановлюємо залежності
+RUN npm ci
+
+# Копіюємо весь код проекту
+COPY . .
+
+# Відкриваємо порт для React
+EXPOSE 3000
+
+# Команда для запуску React
+CMD ["npm", "start"]

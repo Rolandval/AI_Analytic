@@ -11,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libpq-dev \
     gcc \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
 
 # Копіюємо файл залежностей
@@ -19,11 +20,17 @@ COPY ${REQUIREMENTS_FILE} requirements.txt
 # Встановлюємо залежності
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Створюємо директорію для сертифікатів поза /app, щоб вони не перезаписувались
+RUN mkdir -p /ssl_certs
+
+# Генеруємо самопідписані SSL-сертифікати
+RUN openssl req -x509 -newkey rsa:4096 -nodes -keyout /ssl_certs/key.pem -out /ssl_certs/cert.pem -days 365 -subj "/CN=localhost"
+
 # Копіюємо весь код проекту
 COPY . .
 
 # Відкриваємо порт для FastAPI
 EXPOSE 8000
 
-# Команда для запуску FastAPI
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Команда для запуску FastAPI з SSL
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--ssl-keyfile", "/ssl_certs/key.pem", "--ssl-certfile", "/ssl_certs/cert.pem", "--reload"]

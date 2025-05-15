@@ -13,14 +13,41 @@ const api = axios.create({
   },
 });
 
+// Для обходу помилок з самопідписаними сертифікатами у браузері
+if (API_URL.startsWith('https')) {
+  console.log('Using HTTPS with self-signed certificate. Adding special handling for browser environment.');
+  
+  // Додаємо обробник відповідей для логування помилок SSL
+  api.interceptors.response.use(
+    response => response,
+    error => {
+      if (error.message === 'Network Error') {
+        console.error('SSL Certificate Error detected. This is likely due to a self-signed certificate.');
+        console.error('To fix this, you need to add an exception in your browser for this domain.');
+        console.error('Try accessing the API directly in your browser first: ' + API_URL);
+      }
+      return Promise.reject(error);
+    }
+  );
+}
+
 // API для роботи з брендами
 export const getBrands = async () => {
   try {
+    console.log('Fetching brands...');
     const response = await api.get('/batteries/brands');
-    return response.data.brands;
+    console.log('Brands response:', response);
+    
+    // Перевірка наявності даних
+    if (response.data && response.data.brands) {
+      return response.data.brands;
+    } else {
+      console.warn('No brands data in response:', response.data);
+      return []; // Повертаємо порожній масив замість undefined
+    }
   } catch (error) {
     console.error('Error fetching brands:', error);
-    throw error;
+    return []; // Повертаємо порожній масив у випадку помилки
   }
 };
 
@@ -93,7 +120,7 @@ export const uploadReports = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await api.post('/ai_upload/upload_reports', formData, {
+    const response = await api.post('/upload_batteries/ai_upload/upload_reports', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -108,7 +135,7 @@ export const uploadReports = async (file) => {
 // API для запуску парсера конкурентів
 export const parseCompetitor = async () => {
   try {
-    const response = await api.post('/ai_upload/parse_competitor');
+    const response = await api.post('/upload_batteries/ai_upload/parse_competitor');
     return response.data;
   } catch (error) {
     console.error('Error parsing competitor:', error);
@@ -119,7 +146,7 @@ export const parseCompetitor = async () => {
 // API для запуску парсера наших цін
 export const parseMe = async () => {
   try {
-    const response = await api.post('/ai_upload/parse_me');
+    const response = await api.post('/upload_batteries/ai_upload/parse_me');
     return response.data;
   } catch (error) {
     console.error('Error parsing me:', error);

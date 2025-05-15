@@ -12,6 +12,11 @@ from parsers.ai_head import parse_ai_reports
 from parsers.competitors.avto_zvuk import parse_batteries_avto_zvuk as parse_avto_zvuk
 from parsers.competitors.aku_lviv import parse_batteries_aku_lviv as parse_aku_lviv
 from parsers.competitors.makb import parse_batteries_makb as parse_makb
+from parsers.competitors.shyp_shuna import parse_batteries_shyp_shuna as parse_shyp_shuna
+from parsers.competitors.aet_ua import parse_batteries_aet_ua as parse_aet_ua
+from parsers.competitors.akb_mag import parse_batteries_akb_mag as parse_akb_mag
+from parsers.competitors.akb_plus import parse_batteries_akb_plus as parse_akb_plus
+from parsers.competitors.dvi_klemy import parse_batteries_dvi_klemy as parse_dvi_klemy
 from helpers.competitors import get_competitors_name
 
 from parsers.me_parser import parse_batteries_me as parse_me
@@ -192,6 +197,11 @@ async def upload_batteries_file():
     func_list.append(parse_makb)
     func_list.append(parse_avto_zvuk)
     func_list.append(parse_aku_lviv)
+    func_list.append(parse_shyp_shuna)
+    func_list.append(parse_aet_ua)
+    func_list.append(parse_akb_mag)
+    func_list.append(parse_akb_plus)
+    func_list.append(parse_dvi_klemy)
     for func in func_list:
         supplier_name = await get_competitors_name(func)
         await process_batteries_import_parser(func, supplier_name)

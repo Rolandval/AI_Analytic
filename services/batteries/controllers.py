@@ -67,7 +67,7 @@ async def process_batteries_import(
                 
                 # Upsert в CurrentBatteries
                 res = await session.execute(select(CurrentBatteries).where(CurrentBatteries.full_name == entry.get("full_name")))
-                current = res.scalar_one_or_none().first()
+                current = res.scalar_one_or_none()
                 if current:
                     current.name = entry.get("name")
                     current.price = entry.get("price")

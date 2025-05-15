@@ -83,15 +83,15 @@ const FilterForm = ({ onSubmit, initialValues }) => {
   ];
 
   // Перетворюємо бренди та постачальників у формат для react-select
-  const brandOptions = brands.map(brand => ({
+  const brandOptions = brands && brands.length ? brands.map(brand => ({
     value: brand.id,
     label: brand.name,
-  }));
+  })) : [];
 
-  const supplierOptions = suppliers.map(supplier => ({
+  const supplierOptions = suppliers && suppliers.length ? suppliers.map(supplier => ({
     value: supplier.id,
     label: supplier.name,
-  }));
+  })) : [];
 
   // Налаштовуємо formik
   const formik = useFormik({
@@ -185,7 +185,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
         {expanded && <form onSubmit={formik.handleSubmit}>
           <Grid container spacing={4}>
           {/* Бренди */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <Typography variant="subtitle2" gutterBottom>
               Бренд
             </Typography>
@@ -204,7 +204,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
           </Grid>
 
           {/* Постачальники */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} sm={6}>
             <Typography variant="subtitle2" gutterBottom>
               Постачальники
             </Typography>
@@ -223,7 +223,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
           </Grid>
 
           {/* Об'єм акумулятора */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <TextField
               fullWidth
               id="volumes"
@@ -241,7 +241,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
           </Grid>
 
           {/* Пусковий струм */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <TextField
               fullWidth
               id="c_amps"
@@ -259,7 +259,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
           </Grid>
 
           {/* Полярність */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <Typography variant="subtitle2" gutterBottom>
               Полярність
             </Typography>
@@ -278,7 +278,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
           </Grid>
 
           {/* Регіон */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <Typography variant="subtitle2" gutterBottom>
               Регіон
             </Typography>
@@ -297,7 +297,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
           </Grid>
 
           {/* Тип електроліту */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <Typography variant="subtitle2" gutterBottom>
               Тип електроліту
             </Typography>
@@ -359,7 +359,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
           </Grid>
 
           {/* Розмір сторінки */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <FormControl fullWidth>
               <InputLabel id="page-size-label">Розмір сторінки</InputLabel>
               <MuiSelect
@@ -379,7 +379,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
           </Grid>
 
           {/* Сортування за полем */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <Typography variant="subtitle2" gutterBottom>
               Сортування за полем
             </Typography>
@@ -397,7 +397,7 @@ const FilterForm = ({ onSubmit, initialValues }) => {
           </Grid>
 
           {/* Порядок сортування */}
-          <Grid item xs={12} md={4}>
+          <Grid item xs={12} sm={4}>
             <Typography variant="subtitle2" gutterBottom>
               Порядок сортування
             </Typography>

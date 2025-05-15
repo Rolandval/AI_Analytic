@@ -30,3 +30,13 @@ async def get_competitors_name(func):
         return "Акумулятори Львів (aku.lviv)"
     if func.__name__ == "parse_batteries_makb":  
         return "MAKB"
+    if func.__name__ == "parse_batteries_shyp_shuna":  
+        return "Shyp-Shyna"
+    if func.__name__ == "parse_batteries_aet_ua":  
+        return "AET UA"
+    if func.__name__ == "parse_batteries_akb_mag":  
+        return "AKB Mag"
+    if func.__name__ == "parse_batteries_akb_plus":  
+        return "AKB Plus"
+    if func.__name__ == "parse_batteries_dvi_klemy":  
+        return "DVI Klemy"

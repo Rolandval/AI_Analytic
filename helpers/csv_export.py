@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import re
 # import textract
 import PyPDF2
 from docx import Document
@@ -11,6 +12,7 @@ import csv
 import openpyxl
 import xlrd
 import subprocess
+import pdfplumber
 # import win32com.client
 
 
@@ -292,22 +294,28 @@ def _convert_docx_to_csv(input_path, output_path):
 #         word.Quit()
 
 def _convert_pdf_to_csv(input_path, output_path):
-    """Конвертує PDF файл у CSV формат"""
-    try:
-        text = ""
-        with open(input_path, 'rb') as file:
-            reader = PyPDF2.PdfReader(file)
-            for page in reader.pages:
-                text += page.extract_text() + "\n"
-        
-        # Записуємо текст у CSV
-        lines = text.split('\n')
-        with open(output_path, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.writer(f, quoting=csv.QUOTE_ALL, escapechar='\\', quotechar='"', doublequote=True)
-            writer.writerow(["Text"])
+    all_rows = []
+    current_brand = None
+    pattern_brand = re.compile(r'.*(виробник|гарантія|[A-ZА-Я]{3,}.*\))')
+
+    with pdfplumber.open(input_path) as pdf:
+        for page in pdf.pages:
+            lines = page.extract_text().split('\n')
             for line in lines:
-                if line.strip():
-                    writer.writerow([line.strip()])
-    except Exception as e:
-        logger.error(f"Помилка при обробці PDF файлу: {str(e)}")
-        raise
+                line = line.strip()
+
+                # Якщо це бренд
+                if pattern_brand.match(line):
+                    current_brand = line
+                    continue
+
+                # Якщо це потенційно рядок з даними акумулятора
+                if re.search(r'\d', line) and len(line.split()) > 4:
+                    row = re.split(r'\s{2,}|\t', line)
+                    all_rows.append([current_brand] + row)
+
+    # Створення DataFrame
+    df = pd.DataFrame(all_rows)
+
+    # Додай свій список колонок або збережи без заголовків
+    df.to_csv(output_path, index=False, header=False)

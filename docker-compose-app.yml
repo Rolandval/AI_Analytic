@@ -22,11 +22,12 @@ services:
       - BACKEND_PORT=${BACKEND_PORT:-8000}
       - FRONTEND_PORT=${FRONTEND_PORT:-3000}
       - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000}
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+      - HTTPS=true
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --ssl-keyfile /ssl_certs/key.pem --ssl-certfile /ssl_certs/cert.pem --reload
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD", "curl", "-f", "-k", "https://localhost:8000/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -54,6 +55,8 @@ services:
       - WDS_SOCKET_HOST=${SERVER_HOST:-0.0.0.0}
       - SERVER_HOST=${SERVER_HOST:-0.0.0.0}
       - FRONTEND_PORT=${FRONTEND_PORT:-3000}
+      - HTTPS=true
+      - WDS_SOCKET_PORT=443
     command: npm start
     networks:
       - app-network

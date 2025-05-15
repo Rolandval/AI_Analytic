@@ -18,7 +18,19 @@ app = FastAPI()
 
 # Додаємо CORS middleware
 # Отримуємо дозволені джерела з змінних середовища або використовуємо значення за замовчуванням
-cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+# Додаємо CORS middleware
+# Отримуємо дозволені джерела з змінних середовища або використовуємо значення за замовчуванням
+cors_origins = os.getenv("CORS_ORIGINS", "*")
+
+# Якщо CORS_ORIGINS містить "*", дозволяємо всі джерела
+if cors_origins == "*":
+    cors_origins = ["*"]
+else:
+    cors_origins = cors_origins.split(",")
+    
+# Додаємо ngrok домен до дозволених джерел
+if "https://7dff-193-93-217-10.ngrok-free.app" not in cors_origins and "*" not in cors_origins:
+    cors_origins.append("https://7dff-193-93-217-10.ngrok-free.app")
 
 app.add_middleware(
     CORSMiddleware,

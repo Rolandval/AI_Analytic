@@ -20,17 +20,17 @@ class Batteries(Base):
     polarity = Column(String, nullable=False, default="R+")
     electrolyte = Column(String, nullable=False, default="LAB")
     
-    brand_id = Column(Integer, ForeignKey('brands.id'), nullable=True)
-    supplier_id = Column(Integer, ForeignKey('suppliers.id'), nullable=True)
+    brand_id = Column(Integer, ForeignKey('batteries_brands.id'), nullable=True)
+    supplier_id = Column(Integer, ForeignKey('batteries_suppliers.id'), nullable=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # ORM-зв'язки
-    brand = relationship("Brands", back_populates="batteries")
-    supplier = relationship("Suppliers", back_populates="batteries")
+    brand = relationship("BatteriesBrands", back_populates="batteries")
+    supplier = relationship("BatteriesSuppliers", back_populates="batteries")
 
-class Brands(Base):
-    __tablename__ = "brands"
+class BatteriesBrands(Base):
+    __tablename__ = "batteries_brands"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
@@ -39,8 +39,8 @@ class Brands(Base):
     batteries = relationship("Batteries", back_populates="brand")
     current_batteries = relationship("CurrentBatteries", back_populates="brand")
 
-class Suppliers(Base):
-    __tablename__ = "suppliers"
+class BatteriesSuppliers(Base):
+    __tablename__ = "batteries_suppliers"
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
@@ -69,11 +69,84 @@ class CurrentBatteries(Base):
 
 
         
-    brand_id = Column(Integer, ForeignKey('brands.id'), nullable=True)
-    supplier_id = Column(Integer, ForeignKey('suppliers.id'), nullable=True)
+    brand_id = Column(Integer, ForeignKey('batteries_brands.id'), nullable=True)
+    supplier_id = Column(Integer, ForeignKey('batteries_suppliers.id'), nullable=True)
     
     updated_at = Column(DateTime, default=datetime.utcnow)
 
     # ORM-зв'язки
-    brand = relationship("Brands", back_populates="current_batteries")
-    supplier = relationship("Suppliers", back_populates="current_batteries")
+    brand = relationship("BatteriesBrands", back_populates="current_batteries")
+    supplier = relationship("BatteriesSuppliers", back_populates="current_batteries")
+
+
+class SollarPanels(Base):
+    __tablename__ = "sollar_panels"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    price = Column(Float, nullable=False)
+    price_per_w = Column(Float, nullable=False)
+    power = Column(Float, nullable=False)
+    full_name = Column(String, nullable=False)
+    panel_type = Column(String, nullable=False, default="одностороння")
+    cell_type = Column(String, nullable=False, default="n-type")
+    thickness = Column(Float, nullable=False, default=30)
+    
+    brand_id = Column(Integer, ForeignKey('sollar_panels_brands.id'), nullable=True)
+    supplier_id = Column(Integer, ForeignKey('sollar_panels_suppliers.id'), nullable=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+
+    # ORM-зв'язки
+    brand = relationship("SollarPanelsBrands", back_populates="sollar_panels")
+    supplier = relationship("SollarPanelsSuppliers", back_populates="sollar_panels")
+
+
+class SollarPanelsCurrent(Base):
+    __tablename__ = "sollar_panels_current"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    price = Column(Float, nullable=False)
+    price_per_w = Column(Float, nullable=False)
+    power = Column(Float, nullable=False)
+    full_name = Column(String, nullable=False)
+    panel_type = Column(String, nullable=False, default="одностороння")
+    cell_type = Column(String, nullable=False, default="n-type")
+    thickness = Column(Float, nullable=False, default=30)
+    
+    brand_id = Column(Integer, ForeignKey('sollar_panels_brands.id'), nullable=True)
+    supplier_id = Column(Integer, ForeignKey('sollar_panels_suppliers.id'), nullable=True)
+    
+    updated_at = Column(DateTime, default=datetime.utcnow)
+
+    # ORM-зв'язки
+    brand = relationship("SollarPanelsBrands", back_populates="sollar_panels_current")
+    supplier = relationship("SollarPanelsSuppliers", back_populates="sollar_panels_current")
+
+
+class SollarPanelsBrands(Base):
+    __tablename__ = "sollar_panels_brands"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    
+    # ORM-зв'язки
+    sollar_panels = relationship("SollarPanels", back_populates="brand")
+    sollar_panels_current = relationship("SollarPanelsCurrent", back_populates="brand")
+
+
+class SollarPanelsSuppliers(Base):
+    __tablename__ = "sollar_panels_suppliers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    is_me = Column(Boolean, default=False)
+    is_supplier = Column(Boolean, default=False)
+    is_competitor = Column(Boolean, default=False)
+    
+    # ORM-зв'язки
+    sollar_panels = relationship("SollarPanels", back_populates="supplier")
+    sollar_panels_current = relationship("SollarPanelsCurrent", back_populates="supplier")
+

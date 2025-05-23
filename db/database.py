@@ -3,7 +3,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import sessionmaker
 import os
 from dotenv import load_dotenv
-from .models import Base
+from .models import Base, BatteriesSuppliers, BatteriesBrands
 
 # Завантаження змінних середовища
 load_dotenv()
@@ -33,7 +33,6 @@ async def create_tables():
 
 async def init_db():
     """Инициализирует базу данных с начальными данными"""
-    from .models import Suppliers, Brands
     
     # Создаем таблицы
     await create_tables()
@@ -41,22 +40,22 @@ async def init_db():
     # Добавляем начальные данные
     async with SessionLocal() as session:
         # Проверяем, есть ли уже поставщики
-        supplier_count = await session.execute(func.count(Suppliers.id))
+        supplier_count = await session.execute(func.count(BatteriesSuppliers.id))
         if supplier_count.scalar() == 0:
             # Добавляем поставщика "Авто Аптека"
-            supplier = Suppliers(
+            supplier = BatteriesSuppliers(
                 name="Авто Аптека",
                 is_supplier=True
             )
             session.add(supplier)
         
         # Проверяем, есть ли уже бренды
-        brand_count = await session.execute(func.count(Brands.id))
+        brand_count = await session.execute(func.count(BatteriesBrands.id))
         if brand_count.scalar() == 0:
             # Добавляем популярные бренды аккумуляторов
             brands = [
-                Brands(name="BOSCH"),
-                Brands(name="VARTA"),
+                BatteriesBrands(name="BOSCH"),
+                BatteriesBrands(name="VARTA"),
 
             ]
             for brand in brands:

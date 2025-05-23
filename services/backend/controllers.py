@@ -5,23 +5,27 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func
 from fastapi import Query
 from db.database import SessionLocal
-from db.models import Batteries, CurrentBatteries, Brands, Suppliers
+from db.models import Batteries, CurrentBatteries, BatteriesBrands, BatteriesSuppliers
 from services.backend.schemas import SortEnumModel, SortOrderEnumModel, AnalyticDataSchema, ChartDataSchema
 from datetime import datetime
 from helpers.brand import get_or_create_brand
+from helpers.me import get_my_id
+from helpers.competitors import get_competitors_ids
 from helpers.prompt import analytics_prompt
 from helpers.ai_charts import get_chart_data
 from helpers.charts import plot_combined_price_chart
+from analytic.price_comparison import price_comparison
+from services.backend.schemas import BatteryBase
 
 async def get_brands():
     session = SessionLocal()
-    result = await session.execute(select(Brands))
+    result = await session.execute(select(BatteriesBrands))
     await session.close()
     return result.scalars().all()
 
 async def get_suppliers():
     session = SessionLocal()
-    result = await session.execute(select(Suppliers))
+    result = await session.execute(select(BatteriesSuppliers))
     await session.close()
     return result.scalars().all()
 
@@ -169,7 +173,7 @@ async def ai_chart(data: ChartDataSchema):
     # Якщо вказані постачальники, знаходимо їх ID
     if include_suppliers:
         for supplier_name in include_suppliers:
-            query = select(Suppliers).where(Suppliers.name == supplier_name)
+            query = select(BatteriesSuppliers).where(BatteriesSuppliers.name == supplier_name)
             result = await session.execute(query)
             supplier = result.scalar_one_or_none()
             if supplier:
@@ -223,3 +227,71 @@ async def ai_chart(data: ChartDataSchema):
     chart = plot_combined_price_chart(datasets=chart_data, normalize=True)
 
     return {"chart": chart}
+
+async def get_price_comparison_data():
+    session = SessionLocal()
+    try:
+        competitor_ids = await get_competitors_ids(session)
+        my_id = await get_my_id(session)
+        
+        
+        # Використовуємо joinedload для завантаження зв'язаних об'єктів
+        my_data_result = await session.execute(
+            select(CurrentBatteries)
+            .options(joinedload(CurrentBatteries.brand), joinedload(CurrentBatteries.supplier))
+            .where(CurrentBatteries.supplier_id == my_id, CurrentBatteries.price > 0, CurrentBatteries.c_amps > 0, CurrentBatteries.volume > 0, CurrentBatteries.price < 11000)
+        )
+        my_data = my_data_result.scalars().all()
+        my_brands_ids = [battery.brand_id for battery in my_data]
+        
+        competitors_data_result = await session.execute(
+            select(CurrentBatteries)
+            .options(joinedload(CurrentBatteries.brand), joinedload(CurrentBatteries.supplier))
+            .where(CurrentBatteries.supplier_id.in_(competitor_ids), CurrentBatteries.brand_id.in_(my_brands_ids), CurrentBatteries.price > 0, CurrentBatteries.c_amps > 0, CurrentBatteries.volume > 0, CurrentBatteries.price < 11000)
+        )
+        competitors_data = competitors_data_result.scalars().all()
+        
+        # Додаємо await і розділяємо на два кроки
+        supplier_result = await session.execute(select(BatteriesSuppliers).where(BatteriesSuppliers.id == my_id))
+        supplier = supplier_result.scalar_one_or_none()
+        my_company_name = supplier.name if supplier else "Моя компанія"
+
+
+        my_batteries = [
+            BatteryBase(
+                brand=battery.brand.name if battery.brand else "",
+                supplier=battery.supplier.name if battery.supplier else "",
+                name=battery.name,
+                volume=battery.volume,
+                full_name=battery.full_name,
+                price=battery.price,
+                c_amps=battery.c_amps,
+                region=battery.region,
+                polarity=battery.polarity,
+                electrolyte=battery.electrolyte,
+                updated_at=battery.updated_at
+            ) for battery in my_data
+        ]
+        
+        competitors_batteries = [
+            BatteryBase(
+                brand=battery.brand.name if battery.brand else "",
+                supplier=battery.supplier.name if battery.supplier else "",
+                name=battery.name,
+                full_name=battery.full_name,
+                volume=battery.volume,
+                price=battery.price,
+                c_amps=battery.c_amps,
+                region=battery.region,
+                polarity=battery.polarity,
+                electrolyte=battery.electrolyte,
+                supplier_id=battery.supplier_id,
+                updated_at=battery.updated_at
+            ) for battery in competitors_data
+        ]
+
+        # Викликаємо імпортовану функцію price_comparison
+        result = price_comparison(my_batteries, competitors_batteries, my_company_name)
+        return {"price_comparison": result}
+    finally:
+        await session.close()

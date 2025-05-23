@@ -12,6 +12,7 @@ from db.database import SessionLocal, engine, init_db, get_session
 load_dotenv()
 
 from services.batteries.views import router as batteries_router
+from services.sollar_panels.views import router as sollar_panels_router
 from services.backend.views import router as backend_router
 
 app = FastAPI()
@@ -28,9 +29,24 @@ if cors_origins == "*":
 else:
     cors_origins = cors_origins.split(",")
     
-# Додаємо ngrok домен до дозволених джерел
-if "https://7dff-193-93-217-10.ngrok-free.app" not in cors_origins and "*" not in cors_origins:
-    cors_origins.append("https://7dff-193-93-217-10.ngrok-free.app")
+# Додаємо локальні адреси та ngrok домен до дозволених джерел
+if "*" not in cors_origins:
+    # Додаємо локальні адреси для розробки
+    local_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:800",
+        "http://127.0.0.1:800",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:8002",
+        "http://127.0.0.1:8002"
+    ]
+    
+    for origin in local_origins:
+        if origin not in cors_origins:
+            cors_origins.append(origin)
+            
 
 app.add_middleware(
     CORSMiddleware,
@@ -69,4 +85,5 @@ async def health_check():
     return {"status": "healthy"}
 
 app.include_router(batteries_router)
+app.include_router(sollar_panels_router)
 app.include_router(backend_router)

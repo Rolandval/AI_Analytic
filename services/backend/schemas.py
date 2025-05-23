@@ -1,6 +1,7 @@
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 import enum
+from datetime import datetime
 
 class SortEnumModel(enum.Enum):
     price = "price"
@@ -11,6 +12,23 @@ class SortEnumModel(enum.Enum):
 class SortOrderEnumModel(enum.Enum):
     asc = "asc"
     desc = "desc"
+
+
+class BatteryBase(BaseModel):
+    brand: str = ""
+    supplier: str = ""
+    name: str = ""
+    volume: Optional[float] = None
+    full_name: Optional[str] = None
+    price: float = 0.0
+    c_amps: Optional[int] = None
+    region: Optional[str] = None
+    polarity: Optional[str] = None
+    electrolyte: Optional[str] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True  # Для сумісності з SQLAlchemy моделями
 
 
 class CurrentBattery(BaseModel):

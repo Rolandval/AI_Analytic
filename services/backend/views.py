@@ -2,7 +2,14 @@ from fastapi import APIRouter, UploadFile, File, Form, HTTPException, status
 import tempfile, os
 from typing import Optional, List
 from services.backend.schemas import CurrentBattery, AnalyticDataSchema, ChartDataSchema
-from services.backend.controllers import get_brands, get_suppliers, get_current_batteries, ai_analytic, ai_chart
+from services.backend.controllers import (
+    get_brands,
+    get_suppliers,
+    get_current_batteries,
+    ai_analytic,
+    ai_chart,
+    get_price_comparison_data
+    )
 
 
 router = APIRouter(prefix="/batteries", tags=["batteries"])
@@ -46,3 +53,7 @@ async def get_analytics(data: AnalyticDataSchema):
 @router.post("/chart")
 async def get_chart(data: ChartDataSchema):
     return await ai_chart(data)
+
+@router.get("/price_comparison")
+async def get_price_comparison():
+    return await get_price_comparison_data()

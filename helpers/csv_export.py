@@ -13,6 +13,14 @@ import openpyxl
 import xlrd
 import subprocess
 import pdfplumber
+import google.generativeai as genai
+from PIL import Image
+import base64
+import io
+from dotenv import load_dotenv
+import requests
+
+load_dotenv()
 # import win32com.client
 
 
@@ -39,6 +47,9 @@ def convert_to_csv(input_path, output_path=None):
     """
     ext = os.path.splitext(input_path)[-1].lower()
 
+    if input_path.startswith('https://docs.google'):
+        output_path = 'google.csv'
+
     if output_path is None:
         output_path = os.path.splitext(input_path)[0] + '.csv'
     
@@ -54,6 +65,10 @@ def convert_to_csv(input_path, output_path=None):
             raise ValueError(f"Формат {ext} не підтримується!")
         elif ext == '.pdf':
             _convert_pdf_to_csv(input_path, output_path)
+        elif ext == '.png' or ext == '.jpg' or ext == '.jpeg':
+            _convert_image_to_csv(input_path, output_path)
+        elif input_path.startswith('https://docs.google'):
+            _convert_google_to_csv(input_path, output_path)
         else:
             raise ValueError(f"Формат {ext} не підтримується!")
         
@@ -319,3 +334,128 @@ def _convert_pdf_to_csv(input_path, output_path):
 
     # Додай свій список колонок або збережи без заголовків
     df.to_csv(output_path, index=False, header=False)
+
+
+def _convert_image_to_csv(input_path, output_path):
+    """
+    Конвертує зображення (.png, .jpg, .jpeg) у CSV формат за допомогою Gemini 1.5 Flash.
+    Модель аналізує зображення і витягує структуровані дані про товари.
+    
+    Args:
+        input_path: Шлях до вхідного файлу зображення
+        output_path: Шлях до вихідного CSV файлу
+    """
+    try:
+        
+        
+        # Налаштування Gemini API
+        api_key = os.getenv("GEMINI_API_KEY")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY не знайдено в змінних середовища")
+            
+        genai.configure(api_key=api_key)
+
+        # Створення моделі
+        model = genai.GenerativeModel(
+            model_name="gemini-1.5-flash",
+            generation_config={
+                "temperature": 0.3,
+                "top_p": 1,
+                "top_k": 40,
+                "max_output_tokens": 999999
+            }
+        )
+        
+        # Завантаження та підготовка зображення
+        logger.info(f"Завантаження зображення: {input_path}")
+        img = Image.open(input_path)
+        
+        # Відправлення запиту до Gemini
+        logger.info(f"Відправлення зображення в Gemini для аналізу")
+        
+        prompt = """
+        Проаналізуй це зображення і витягни інформацію про акумулятори або інші товари.
+        Для кожного товару визнач наступні характеристики (якщо вони є на зображенні):
+        - Назва товару
+        - Бренд
+        - Ціна
+        - Ємність (Ah)
+        - Пусковий струм (A)
+        - Полярність (наприклад, R+, L+)
+        - Регіон виробництва (EUROPE, ASIA)
+        - Тип електроліту (AGM, EFB, GEL, LAB)
+        
+        Поверни результат у форматі CSV без заголовків, де кожен рядок - це окремий товар.
+        Кожен рядок повинен містити всі вищезазначені характеристики, розділені комами.
+        Якщо якась характеристика відсутня, залиш порожнє місце між комами.
+        
+        Приклад формату:
+        Varta Blue Dynamic, VARTA, 3200, 60, 540, R+, EUROPE, LAB
+        """
+        
+        response = model.generate_content([prompt, img])
+        
+        # Обробка відповіді
+        if not response.text:
+            raise ValueError("Отримано порожню відповідь від Gemini API")
+            
+        logger.info(f"Отримано відповідь від Gemini API")
+        
+        # Очищення відповіді від markdown та інших форматувань
+        csv_text = response.text.strip()
+        
+        # Видалення можливих блоків коду
+        if "```" in csv_text:
+            csv_text = csv_text.split("```")[1] if "```csv" in csv_text else csv_text.split("```")[1]
+            csv_text = csv_text.strip()
+        
+        # Запис у CSV файл
+        with open(output_path, 'w', newline='', encoding='utf-8') as csvfile:
+            # Перевірка, чи є дані у форматі CSV
+            lines = csv_text.split('\n')
+            writer = csv.writer(csvfile)
+            
+            for line in lines:
+                if line.strip():  # Пропускаємо порожні рядки
+                    writer.writerow(line.split(','))
+        
+        logger.info(f"Дані успішно записано у CSV файл: {output_path}")
+        
+    except ImportError as e:
+        logger.error(f"Помилка імпорту модуля: {str(e)}. Переконайтеся, що встановлено необхідні пакети.")
+        raise
+    except Exception as e:
+        logger.error(f"Помилка при конвертації зображення у CSV: {str(e)}")
+        raise
+
+def _convert_google_to_csv(input_path, output_path):
+    try:   
+        # Витягуємо ID документа та gid з посилання
+        doc_id_match = re.search(r'/d/([a-zA-Z0-9-_]+)', input_path)
+        if not doc_id_match:
+            raise ValueError("Не вдалося витягти ID документа з посилання")
+        
+        doc_id = doc_id_match.group(1)
+        
+        # Витягуємо gid (якщо є)
+        gid_match = re.search(r'gid=(\d+)', input_path)
+        gid = gid_match.group(1) if gid_match else '0'
+        
+        # Формуємо посилання для експорту CSV
+        export_url = f"https://docs.google.com/spreadsheets/d/{doc_id}/export?format=csv&gid={gid}"
+        
+        # Завантажуємо CSV
+        response = requests.get(export_url)
+        if response.status_code != 200:
+            raise ValueError(f"Помилка при завантаженні CSV: {response.status_code}")
+        
+        # Зберігаємо CSV у вихідний файл
+        with open(output_path, 'wb') as f:
+            f.write(response.content)
+        
+        logger.info(f"Google Spreadsheet успішно конвертовано у CSV: {output_path}")
+        return output_path
+        
+    except Exception as e:
+        logger.error(f"Помилка при конвертації Google Spreadsheet у CSV: {str(e)}")
+        raise

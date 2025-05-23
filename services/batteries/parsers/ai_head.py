@@ -1,6 +1,6 @@
-from parsers.ai_parser import ai_parser
+from services.batteries.parsers.ai_parser import ai_parser
 from helpers.csv_export import convert_to_csv
-from helpers.ai_filter import ai_filter
+from services.batteries.parsers.ai_batteries_filter import ai_filter
 
 
 def parse_ai_reports(file_path: str):

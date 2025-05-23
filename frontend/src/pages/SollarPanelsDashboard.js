@@ -1,29 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Box, CircularProgress, Divider, alpha } from '@mui/material';
-import FilterForm from '../components/FilterForm';
-import BatteryTable from '../components/BatteryTable';
+import SollarPanelFilterForm from '../components/SollarPanelFilterForm';
+import SollarPanelTable from '../components/SollarPanelTable';
 import Pagination from '../components/Pagination';
-import BatteryChart from '../components/BatteryChart';
+import SollarPanelChart from '../components/SollarPanelChart';
 import ChartModal from '../components/ChartModal';
 import AnalyticsForm from '../components/AnalyticsForm';
 import PriceComparisonButton from '../components/PriceComparisonButton';
 import { useAppContext } from '../context/AppContext';
-import { getCurrentBatteries } from '../api';
+import { getCurrentSollarPanels } from '../api';
 
-const Dashboard = () => {
+const SollarPanelsDashboard = () => {
   const { loading: globalLoading, setLoading, error: globalError, setError } = useAppContext();
-  const [batteries, setBatteries] = useState([]);
+  const [sollarPanels, setSollarPanels] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedBattery, setSelectedBattery] = useState(null);
+  const [selectedPanel, setSelectedPanel] = useState(null);
   const [chartModalOpen, setChartModalOpen] = useState(false);
-  const [tempSelectedBattery, setTempSelectedBattery] = useState(null);
+  const [tempSelectedPanel, setTempSelectedPanel] = useState(null);
   const [filters, setFilters] = useState({
     brand_ids: [],
     supplier_ids: [],
-    volumes: [],
-    polarities: [],
-    c_amps: [],
+    powers: [],
+    panel_types: [],
+    cell_types: [],
     price_diapason: [0, 10000],
     page: 1,
     page_size: 10,
@@ -31,18 +31,18 @@ const Dashboard = () => {
     sort_order: 'desc',
   });
 
-  // Функція для отримання акумуляторів з фільтрами
-  const fetchBatteries = async (filterParams) => {
+  // Функція для отримання сонячних панелей з фільтрами
+  const fetchSollarPanels = async (filterParams) => {
     try {
       setLoading(true);
-      const response = await getCurrentBatteries(filterParams);
-      setBatteries(response.batteries || []);
+      const response = await getCurrentSollarPanels(filterParams);
+      setSollarPanels(response.sollar_panels || []);
       setTotalPages(response.total_pages || 1);
       setError(null);
     } catch (err) {
-      console.error('Error fetching batteries:', err);
-      setError('Помилка при завантаженні акумуляторів');
-      setBatteries([]);
+      console.error('Error fetching sollar panels:', err);
+      setError('Помилка при завантаженні сонячних панелей');
+      setSollarPanels([]);
       setTotalPages(1);
     } finally {
       setLoading(false);
@@ -54,7 +54,7 @@ const Dashboard = () => {
     const newFilters = { ...formValues, page: 1 }; // Скидаємо сторінку на першу при зміні фільтрів
     setFilters(newFilters);
     setCurrentPage(1);
-    fetchBatteries(newFilters);
+    fetchSollarPanels(newFilters);
   };
 
   // Обробник зміни сторінки
@@ -62,12 +62,12 @@ const Dashboard = () => {
     const newFilters = { ...filters, page: newPage };
     setFilters(newFilters);
     setCurrentPage(newPage);
-    fetchBatteries(newFilters);
+    fetchSollarPanels(newFilters);
   };
 
   // Обробник кліку на кнопку графіка - відкриває модальне вікно
-  const handleChartClick = (battery) => {
-    setTempSelectedBattery(battery);
+  const handleChartClick = (panel) => {
+    setTempSelectedPanel(panel);
     setChartModalOpen(true);
   };
 
@@ -77,14 +77,14 @@ const Dashboard = () => {
   };
 
   // Обробник підтвердження вибору постачальників
-  const handleConfirmSuppliers = (battery, selectedSuppliers) => {
+  const handleConfirmSuppliers = (panel, selectedSuppliers) => {
     // Встановлюємо вибраний акумулятор та передаємо вибраних постачальників
-    setSelectedBattery({...battery, selectedSuppliers});
+    setSelectedPanel({...panel, selectedSuppliers});
   };
 
-  // Завантажуємо акумулятори при першому рендері
+  // Завантажуємо сонячні панелі при першому рендері
   useEffect(() => {
-    fetchBatteries(filters);
+    fetchSollarPanels(filters);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -143,7 +143,7 @@ const Dashboard = () => {
             }
           }}
         >
-          Dashboard акумулятори аналітика
+          Dashboard сонячні панелі аналітика
         </Typography>
         <Typography 
           variant="subtitle1" 
@@ -155,12 +155,12 @@ const Dashboard = () => {
             lineHeight: 1.6
           }}
         >
-          Сучасна система аналізу та моніторингу цін на акумулятори з розширеними можливостями фільтрації
+          Сучасна система аналізу та моніторингу цін на сонячні панелі з розширеними можливостями фільтрації
         </Typography>
       </Box>
 
       {/* Форма фільтрації */}
-      <FilterForm onSubmit={handleFilterSubmit} initialValues={filters} />
+      <SollarPanelFilterForm onSubmit={handleFilterSubmit} initialValues={filters} />
 
       {/* Індикатор завантаження */}
       {globalLoading && (
@@ -176,9 +176,9 @@ const Dashboard = () => {
         </Typography>
       )}
 
-      {/* Таблиця акумуляторів */}
-      <BatteryTable 
-        batteries={batteries} 
+      {/* Таблиця сонячних панелей */}
+      <SollarPanelTable 
+        sollarPanels={sollarPanels} 
         onChartClick={handleChartClick} 
         loading={globalLoading} 
       />
@@ -194,19 +194,19 @@ const Dashboard = () => {
       <ChartModal 
         open={chartModalOpen} 
         onClose={handleCloseChartModal} 
-        battery={tempSelectedBattery} 
+        battery={tempSelectedPanel} 
         onConfirm={handleConfirmSuppliers} 
       />
 
-      {/* Графік для вибраного акумулятора */}
-      {selectedBattery && (
-        <BatteryChart battery={selectedBattery} />
+      {/* Графік для вибраної сонячної панелі */}
+      {selectedPanel && (
+        <SollarPanelChart panel={selectedPanel} />
       )}
 
       <Divider sx={{ my: 4 }} />
 
       {/* Форма для аналітики */}
-      <AnalyticsForm batteries={batteries} />
+      <AnalyticsForm sollarPanels={sollarPanels} />
       
       <Divider sx={{ my: 4 }} />
       
@@ -216,4 +216,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default SollarPanelsDashboard;

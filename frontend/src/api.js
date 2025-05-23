@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Використовуємо змінну середовища або значення за замовчуванням
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 
 console.log('Using API URL:', API_URL);
 
@@ -58,6 +58,21 @@ export const getSuppliers = async () => {
     return response.data.suppliers;
   } catch (error) {
     console.error('Error fetching suppliers:', error);
+    throw error;
+  }
+};
+
+// API для завантаження звітів у текстовому форматі
+export const uploadReportsText = async (text, supplierName) => {
+  try {
+    const response = await api.post('/upload_batteries/ai_upload/upload_reports_text', {
+      text: text,
+      supplier_name: supplierName
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error uploading text reports:', error);
     throw error;
   }
 };
@@ -150,6 +165,17 @@ export const parseMe = async () => {
     return response.data;
   } catch (error) {
     console.error('Error parsing me:', error);
+    throw error;
+  }
+};
+
+// API для отримання порівняння цін з конкурентами
+export const getPriceComparison = async () => {
+  try {
+    const response = await api.get('/batteries/price_comparison');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching price comparison:', error);
     throw error;
   }
 };

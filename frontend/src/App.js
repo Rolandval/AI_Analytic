@@ -9,6 +9,8 @@ import Layout from './components/Layout';
 // Сторінки
 import Dashboard from './pages/Dashboard';
 import Reports from './pages/Reports';
+import SollarPanelsDashboard from './pages/SollarPanelsDashboard';
+import SolarPanelReports from './pages/SolarPanelReports';
 
 // Контекст
 import { AppProvider } from './context/AppContext';
@@ -51,7 +53,9 @@ function App() {
             <Layout>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/reports" element={<Reports />} />
+                <Route path="/solar-panels" element={<SollarPanelsDashboard />} />
+                <Route path="/reports" element={<Reports productType="batteries" />} />
+                <Route path="/solar-panels/reports" element={<SolarPanelReports />} />
               </Routes>
             </Layout>
           </Router>

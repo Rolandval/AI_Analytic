@@ -6,7 +6,7 @@ import Pagination from '../components/Pagination';
 import SollarPanelChart from '../components/SollarPanelChart';
 import ChartModal from '../components/ChartModal';
 import AnalyticsForm from '../components/AnalyticsForm';
-import PriceComparisonButton from '../components/PriceComparisonButton';
+import SolarPanelPriceComparison from '../components/SolarPanelPriceComparison';
 import { useAppContext } from '../context/AppContext';
 import { getCurrentSollarPanels } from '../api';
 
@@ -210,8 +210,8 @@ const SollarPanelsDashboard = () => {
       
       <Divider sx={{ my: 4 }} />
       
-      {/* Кнопка порівняння цін з конкурентами */}
-      <PriceComparisonButton />
+      {/* Компонент порівняння цін з конкурентами */}
+      <SolarPanelPriceComparison />
     </Container>
   );
 };

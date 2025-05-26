@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Card, CardHeader, Typography, alpha, useTheme, CircularProgress } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
-import { getSollarPanelHistory } from '../api';
+import { getSolarPanelsChart } from '../api';
 import { useAppContext } from '../context/AppContext';
 
 const SollarPanelChart = ({ panel }) => {
@@ -17,15 +17,35 @@ const SollarPanelChart = ({ panel }) => {
       
       try {
         setLoading(true);
-        const response = await getSollarPanelHistory(panel.id, panel.selectedSuppliers);
+        // Підготуємо дані для запиту
+        const chartData = {
+          ...panel,
+          include_suppliers: panel.selectedSuppliers
+        };
+        const response = await getSolarPanelsChart(chartData);
         
-        // Перетворюємо дані для графіка
-        const formattedData = response.map(item => ({
-          date: new Date(item.date).toLocaleDateString(),
-          [item.supplier]: item.price,
-        }));
+        // Перевіряємо структуру відповіді
+        if (response && response.chart) {
+          // Розбираємо дані з відповіді
+          const chartData = JSON.parse(response.chart);
+          
+          // Перетворюємо дані для графіка, якщо вони у правильному форматі
+          if (chartData && chartData.datasets) {
+            const formattedData = chartData.datasets.map(item => ({
+              date: new Date(item.date).toLocaleDateString(),
+              ...item.suppliers
+            }));
+            
+            setChartData(formattedData);
+          } else {
+            console.error('Unexpected chart data format:', chartData);
+            setChartData([]);
+          }
+        } else {
+          console.error('No chart data in response:', response);
+          setChartData([]);
+        }
         
-        setChartData(formattedData);
         setError(null);
       } catch (err) {
         console.error('Error fetching chart data:', err);

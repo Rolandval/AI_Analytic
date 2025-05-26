@@ -18,33 +18,23 @@ import {
 } from '@mui/material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
 import SolarPowerIcon from '@mui/icons-material/SolarPower';
-import { getPriceComparison, getSolarPanelsPriceComparison } from '../api';
+import { getSolarPanelsPriceComparison } from '../api';
 import { useAppContext } from '../context/AppContext';
-import { useLocation } from 'react-router-dom';
 
-const PriceComparisonButton = () => {
+const SolarPanelPriceComparison = () => {
   const theme = useTheme();
   const { setError } = useAppContext();
-  const location = useLocation();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [comparisonData, setComparisonData] = useState(null);
-  
-  const isSolarPanelsPage = location.pathname === '/solar-panels';
 
   const handleOpen = async () => {
     setOpen(true);
     setLoading(true);
     
     try {
-      let response;
-      if (isSolarPanelsPage) {
-        response = await getSolarPanelsPriceComparison();
-      } else {
-        response = await getPriceComparison();
-      }
+      const response = await getSolarPanelsPriceComparison();
       setComparisonData(response.price_comparison);
       setError(null);
     } catch (err) {
@@ -71,12 +61,9 @@ const PriceComparisonButton = () => {
           title={
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                {isSolarPanelsPage ? 
-                  <SolarPowerIcon sx={{ mr: 1, color: theme.palette.info.main }} /> : 
-                  <CompareArrowsIcon sx={{ mr: 1, color: theme.palette.info.main }} />
-                }
+                <SolarPowerIcon sx={{ mr: 1, color: theme.palette.info.main }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  {isSolarPanelsPage ? 'Порівняння цін сонячних панелей' : 'Порівняння цін акумуляторів'}
+                  Порівняння цін сонячних панелей
                 </Typography>
               </Box>
               <Tooltip title="Отримайте детальне порівняння ваших цін з цінами конкурентів на ринку">
@@ -93,7 +80,7 @@ const PriceComparisonButton = () => {
         <CardContent sx={{ p: 3 }}>
           <Button
             variant="contained"
-            startIcon={isSolarPanelsPage ? <SolarPowerIcon /> : <CompareArrowsIcon />}
+            startIcon={<SolarPowerIcon />}
             onClick={handleOpen}
             sx={{
               mt: 2,
@@ -103,7 +90,7 @@ const PriceComparisonButton = () => {
               }
             }}
           >
-            {isSolarPanelsPage ? 'Порівняти ціни сонячних панелей' : 'Порівняти ціни акумуляторів'}
+            Порівняти ціни сонячних панелей
           </Button>
 
           <Dialog
@@ -114,12 +101,9 @@ const PriceComparisonButton = () => {
           >
             <DialogTitle sx={{ backgroundColor: alpha(theme.palette.primary.main, 0.05), borderBottom: '1px solid', borderColor: 'divider' }}>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                {isSolarPanelsPage ? 
-                  <SolarPowerIcon sx={{ mr: 1, color: theme.palette.primary.main }} /> : 
-                  <BatteryChargingFullIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
-                }
+                <SolarPowerIcon sx={{ mr: 1, color: theme.palette.primary.main }} />
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  {isSolarPanelsPage ? 'Порівняння цін сонячних панелей' : 'Порівняння цін акумуляторів'}
+                  Порівняння цін сонячних панелей
                 </Typography>
               </Box>
             </DialogTitle>
@@ -155,4 +139,4 @@ const PriceComparisonButton = () => {
   );
 };
 
-export default PriceComparisonButton;
+export default SolarPanelPriceComparison;

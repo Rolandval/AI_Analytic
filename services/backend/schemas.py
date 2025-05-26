@@ -8,6 +8,7 @@ class SortEnumModel(enum.Enum):
     c_amps = "c_amps"
     volume = "volume"
     region = "region"
+    power = "power"
 
 class SortOrderEnumModel(enum.Enum):
     asc = "asc"
@@ -45,12 +46,12 @@ class CurrentBattery(BaseModel):
     sort_by: SortEnumModel = SortEnumModel.price
     sort_order: SortOrderEnumModel = SortOrderEnumModel.desc
 
-class AnalyticDataSchema(BaseModel):
+class BatteryAnalyticDataSchema(BaseModel):
     batteries: List
     comment: str = ""
 
 
-class ChartDataSchema(BaseModel):
+class ChartBatteryDataSchema(BaseModel):
     name: str
     full_name: str
     brand: str
@@ -60,3 +61,48 @@ class ChartDataSchema(BaseModel):
     region: str
     # Змінюємо ban_suppliers на include_suppliers для вибору постачальників
     include_suppliers: List[str] = []
+
+
+class CurrentSollarPanels(BaseModel):
+    brand_ids: List[int] = None
+    supplier_ids: List[int] = None
+    power: List[float] = None
+    panel_type: str = "all"
+    cell_type: str = "all"
+    thickness: List[float] = None
+    price_per_w: List[float] = None
+    price_diapason: List[int] = None
+    page: int = 1
+    page_size: int = 10
+    sort_by: SortEnumModel = SortEnumModel.price
+    sort_order: SortOrderEnumModel = SortOrderEnumModel.desc
+
+
+class SolarPanelAnalyticDataSchema(BaseModel):
+    sollar_panels: List
+    comment: str = ""
+
+class ChartSolarPanelDataSchema(BaseModel):
+    name: str
+    full_name: str
+    brand: str
+    power: float
+    panel_type: str
+    cell_type: str
+    thickness: float
+    # Змінюємо ban_suppliers на include_suppliers для вибору постачальників
+    include_suppliers: List[str] = []
+
+
+class SollarPanelBase(BaseModel):
+    brand: str = ""
+    supplier: str = ""
+    name: str = ""
+    power: float = 0.0
+    full_name: Optional[str] = None
+    price: float = 0.0
+    price_per_w: float = 0.0
+    thickness: float = 0.0
+    panel_type: str = ""
+    cell_type: str = ""
+    updated_at: Optional[datetime] = None

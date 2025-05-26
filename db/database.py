@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 from .models import Base, BatteriesSuppliers, BatteriesBrands
 
 # Завантаження змінних середовища
-load_dotenv()
+load_dotenv(override=True)
 
-# Отримуємо URL бази даних з змінних середовища або використовуємо значення за замовчуванням
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://db_user:db_password@172.30.16.1:5432/db")
+# Отримуємо URL бази даних з змінних середовища
+DATABASE_URL = os.environ.get("DATABASE_URL")
 
 print(f"Using database connection: {DATABASE_URL}")
 

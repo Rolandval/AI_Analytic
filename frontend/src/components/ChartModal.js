@@ -28,6 +28,9 @@ const MenuProps = {
 };
 
 const ChartModal = ({ open, onClose, battery, onConfirm }) => {
+  // Визначаємо тип продукту (акумулятор чи сонячна панель)
+  const isPanel = battery && (battery.power !== undefined || battery.panel_type !== undefined);
+  const productType = isPanel ? 'solar_panels' : 'batteries';
   const [suppliers, setSuppliers] = useState([]);
   const [selectedSuppliers, setSelectedSuppliers] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -37,7 +40,7 @@ const ChartModal = ({ open, onClose, battery, onConfirm }) => {
     const fetchSuppliers = async () => {
       try {
         setLoading(true);
-        const suppliersData = await getSuppliers();
+        const suppliersData = await getSuppliers(productType);
         setSuppliers(suppliersData);
       } catch (error) {
         console.error('Error fetching suppliers:', error);
@@ -66,7 +69,9 @@ const ChartModal = ({ open, onClose, battery, onConfirm }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Вибір постачальників для графіка</DialogTitle>
+      <DialogTitle>
+        {isPanel ? 'Вибір постачальників для графіка сонячних панелей' : 'Вибір постачальників для графіка акумуляторів'}
+      </DialogTitle>
       <DialogContent>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>

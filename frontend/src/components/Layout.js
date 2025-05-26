@@ -24,6 +24,10 @@ import MenuIcon from '@mui/icons-material/Menu';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 import BatteryChargingFullIcon from '@mui/icons-material/BatteryChargingFull';
+import SolarPowerIcon from '@mui/icons-material/SolarPower';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 
 // Імпорт компонента перемикача теми
@@ -35,21 +39,38 @@ const Layout = ({ children }) => {
   const theme = useTheme();
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const location = useLocation();
+  const [productMenuAnchorEl, setProductMenuAnchorEl] = React.useState(null);
+  
+  const handleProductMenuClick = (event) => {
+    setProductMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleProductMenuClose = () => {
+    setProductMenuAnchorEl(null);
+  };
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
   };
 
+  // Визначаємо шлях для Dashboard залежно від поточної сторінки
+  const isDashboardActive = location.pathname === '/' || location.pathname === '/solar-panels';
+  const isSolarPanelsPage = location.pathname === '/solar-panels';
+  
+  // Динамічно визначаємо шляхи для пунктів меню
+  const dashboardPath = isSolarPanelsPage ? '/solar-panels' : '/';
+  const reportsPath = isSolarPanelsPage ? '/solar-panels/reports' : '/reports';
+  
   const menuItems = [
     {
       text: 'Dashboard',
       icon: <DashboardIcon />,
-      path: '/',
+      path: dashboardPath,
     },
     {
       text: 'Звіти та Парсери',
       icon: <UploadFileIcon />,
-      path: '/reports',
+      path: reportsPath,
     },
   ];
 
@@ -79,24 +100,79 @@ const Layout = ({ children }) => {
           }
         }}
       >
-        <BatteryChargingFullIcon sx={{ 
-          color: 'white', 
-          mr: 1, 
-          fontSize: 28,
-          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
-          animation: 'pulse 2s infinite',
-          '@keyframes pulse': {
-            '0%': { opacity: 0.8 },
-            '50%': { opacity: 1 },
-            '100%': { opacity: 0.8 }
-          }
-        }} />
-        <Typography variant="h6" sx={{ 
-          fontWeight: 700,
-          textShadow: '0 2px 4px rgba(0,0,0,0.2)'
-        }}>
-          Акумулятори
-        </Typography>
+        {location.pathname === '/solar-panels' ? (
+          <SolarPowerIcon sx={{ 
+            color: 'white', 
+            mr: 1, 
+            fontSize: 28,
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+            animation: 'pulse 2s infinite',
+            '@keyframes pulse': {
+              '0%': { opacity: 0.8 },
+              '50%': { opacity: 1 },
+              '100%': { opacity: 0.8 }
+            }
+          }} />
+        ) : (
+          <BatteryChargingFullIcon sx={{ 
+            color: 'white', 
+            mr: 1, 
+            fontSize: 28,
+            filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.2))',
+            animation: 'pulse 2s infinite',
+            '@keyframes pulse': {
+              '0%': { opacity: 0.8 },
+              '50%': { opacity: 1 },
+              '100%': { opacity: 0.8 }
+            }
+          }} />
+        )}
+        <Box 
+          onClick={handleProductMenuClick}
+          sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            cursor: 'pointer',
+            '&:hover': {
+              opacity: 0.9
+            }
+          }}
+        >
+          <Typography variant="h6" sx={{ 
+            fontWeight: 700,
+            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}>
+            {location.pathname === '/solar-panels' ? 'Сонячні панелі' : 'Акумулятори'}
+          </Typography>
+          <KeyboardArrowDownIcon sx={{ ml: 0.5 }} />
+        </Box>
+        <Menu
+          anchorEl={productMenuAnchorEl}
+          open={Boolean(productMenuAnchorEl)}
+          onClose={handleProductMenuClose}
+          MenuListProps={{
+            'aria-labelledby': 'product-menu-button',
+          }}
+        >
+          <MenuItem 
+            component={RouterLink} 
+            to="/" 
+            onClick={handleProductMenuClose}
+            selected={location.pathname === '/'}
+          >
+            <BatteryChargingFullIcon sx={{ mr: 1 }} />
+            Акумулятори
+          </MenuItem>
+          <MenuItem 
+            component={RouterLink} 
+            to="/solar-panels" 
+            onClick={handleProductMenuClose}
+            selected={location.pathname === '/solar-panels'}
+          >
+            <SolarPowerIcon sx={{ mr: 1 }} />
+            Сонячні панелі
+          </MenuItem>
+        </Menu>
       </Box>
       <Divider sx={{ opacity: 0.6 }} />
       <Box sx={{ flexGrow: 1, p: 2 }}>
@@ -214,7 +290,7 @@ const Layout = ({ children }) => {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Система аналізу акумуляторів
+              {location.pathname === '/solar-panels' ? 'Система аналізу сонячних панелей' : 'Система аналізу акумуляторів'}
             </Typography>
           </Box>
           

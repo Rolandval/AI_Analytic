@@ -32,47 +32,55 @@ if (API_URL.startsWith('https')) {
 }
 
 // API для роботи з брендами
-export const getBrands = async () => {
+export const getBrands = async (productType = 'batteries') => {
   try {
-    console.log('Fetching brands...');
-    const response = await api.get('/batteries/brands');
-    console.log('Brands response:', response);
+    console.log(`Fetching ${productType} brands...`);
+    const endpoint = productType === 'solar_panels' ? '/solar_panels/brands' : '/batteries/brands';
+    const response = await api.get(endpoint);
+    console.log(`${productType} brands response:`, response);
     
     // Перевірка наявності даних
     if (response.data && response.data.brands) {
       return response.data.brands;
     } else {
-      console.warn('No brands data in response:', response.data);
+      console.warn(`No ${productType} brands data in response:`, response.data);
       return []; // Повертаємо порожній масив замість undefined
     }
   } catch (error) {
-    console.error('Error fetching brands:', error);
+    console.error(`Error fetching ${productType} brands:`, error);
     return []; // Повертаємо порожній масив у випадку помилки
   }
 };
 
 // API для роботи з постачальниками
-export const getSuppliers = async () => {
+export const getSuppliers = async (productType = 'batteries') => {
   try {
-    const response = await api.get('/batteries/suppliers');
+    const endpoint = productType === 'solar_panels' ? '/solar_panels/suppliers' : '/batteries/suppliers';
+    const response = await api.get(endpoint);
     return response.data.suppliers;
   } catch (error) {
-    console.error('Error fetching suppliers:', error);
+    console.error(`Error fetching ${productType} suppliers:`, error);
     throw error;
   }
 };
 
 // API для завантаження звітів у текстовому форматі
-export const uploadReportsText = async (text, supplierName) => {
+export const uploadReportsText = async (text, supplierName, productType = 'batteries') => {
   try {
-    const response = await api.post('/upload_batteries/ai_upload/upload_reports_text', {
+    const endpoint = productType === 'solar_panels'
+      ? '/upload_solar_panels/ai_upload/upload_reports_text'
+      : '/upload_batteries/ai_upload/upload_reports_text';
+      
+    console.log(`Uploading ${productType} text reports to:`, endpoint);
+    
+    const response = await api.post(endpoint, {
       text: text,
       supplier_name: supplierName
     });
     
     return response.data;
   } catch (error) {
-    console.error('Error uploading text reports:', error);
+    console.error(`Error uploading ${productType} text reports:`, error);
     throw error;
   }
 };
@@ -130,41 +138,57 @@ export const getChart = async (data) => {
 };
 
 // API для завантаження звітів
-export const uploadReports = async (file) => {
+export const uploadReports = async (file, productType = 'batteries') => {
   try {
+    const endpoint = productType === 'solar_panels'
+      ? '/upload_solar_panels/ai_upload/upload_reports'
+      : '/upload_batteries/ai_upload/upload_reports';
+      
+    console.log(`Uploading ${productType} reports to:`, endpoint);
+    
     const formData = new FormData();
     formData.append('file', file);
     
-    const response = await api.post('/upload_batteries/ai_upload/upload_reports', formData, {
+    const response = await api.post(endpoint, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
     return response.data;
   } catch (error) {
-    console.error('Error uploading reports:', error);
+    console.error(`Error uploading ${productType} reports:`, error);
     throw error;
   }
 };
 
 // API для запуску парсера конкурентів
-export const parseCompetitor = async () => {
+export const parseCompetitor = async (productType = 'batteries') => {
   try {
-    const response = await api.post('/upload_batteries/ai_upload/parse_competitor');
+    const endpoint = productType === 'solar_panels'
+      ? '/upload_solar_panels/ai_upload/parse_competitor'
+      : '/upload_batteries/ai_upload/parse_competitor';
+      
+    console.log(`Using endpoint for ${productType} competitor parser:`, endpoint);
+    const response = await api.post(endpoint);
     return response.data;
   } catch (error) {
-    console.error('Error parsing competitor:', error);
+    console.error(`Error parsing ${productType} competitor:`, error);
     throw error;
   }
 };
 
 // API для запуску парсера наших цін
-export const parseMe = async () => {
+export const parseMe = async (productType = 'batteries') => {
   try {
-    const response = await api.post('/upload_batteries/ai_upload/parse_me');
+    const endpoint = productType === 'solar_panels'
+      ? '/upload_solar_panels/ai_upload/parse_me'
+      : '/upload_batteries/ai_upload/parse_me';
+      
+    console.log(`Using endpoint for ${productType} own prices parser:`, endpoint);
+    const response = await api.post(endpoint);
     return response.data;
   } catch (error) {
-    console.error('Error parsing me:', error);
+    console.error(`Error parsing ${productType} own prices:`, error);
     throw error;
   }
 };
@@ -176,6 +200,72 @@ export const getPriceComparison = async () => {
     return response.data;
   } catch (error) {
     console.error('Error fetching price comparison:', error);
+    throw error;
+  }
+};
+
+// API для отримання сонячних панелей з фільтрами
+export const getCurrentSollarPanels = async (filters) => {
+  try {
+    // Перетворюємо фільтри у формат, який очікує бекенд
+    const formattedFilters = {
+      ...filters,
+      // Переконуємося, що всі масиви не є null
+      brand_ids: filters.brand_ids || [],
+      supplier_ids: filters.supplier_ids || [],
+      power: filters.power || [],
+      panel_type: filters.panel_type || 'одностороння',
+      cell_type: filters.cell_type || 'n-type',
+      thickness: filters.thickness || [],
+      // Переконуємося, що price_diapason є масивом чисел
+      price_diapason: Array.isArray(filters.price_diapason) 
+        ? filters.price_diapason.map(value => Number(value)) 
+        : [0, 10000],
+      // Додаємо підтримку для фільтрації за ціною за Вт
+      price_per_w_diapason: Array.isArray(filters.price_per_w_diapason) 
+        ? filters.price_per_w_diapason.map(value => Number(value)) 
+        : [0, 5],
+    };
+    
+    console.log('Sending solar panel filters to backend:', formattedFilters);
+    
+    const response = await api.post('/solar_panels/current_solar_panels', formattedFilters);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching solar panels:', error);
+    throw error;
+  }
+};
+
+// API для аналітики сонячних панелей
+export const getSolarPanelsAnalytics = async (data) => {
+  try {
+    const response = await api.post('/solar_panels/analytics', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching solar panels analytics:', error);
+    throw error;
+  }
+};
+
+// API для отримання графіка сонячних панелей
+export const getSolarPanelsChart = async (data) => {
+  try {
+    const response = await api.post('/solar_panels/chart', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching solar panels chart:', error);
+    throw error;
+  }
+};
+
+// API для отримання порівняння цін сонячних панелей з конкурентами
+export const getSolarPanelsPriceComparison = async () => {
+  try {
+    const response = await api.get('/solar_panels/price_comparison');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching solar panels price comparison:', error);
     throw error;
   }
 };

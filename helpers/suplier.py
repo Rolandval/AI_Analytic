@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from db.models import BatteriesSuppliers, SollarPanelsSuppliers
+from db.models import BatteriesSuppliers, SollarPanelsSuppliers, InvertersSuppliers
 from typing import Optional
 
 async def get_or_create_supplier(session: AsyncSession, suplier_name: str, product: str = "batteries") -> int:
@@ -8,6 +8,8 @@ async def get_or_create_supplier(session: AsyncSession, suplier_name: str, produ
         suplier_model = BatteriesSuppliers
     elif product == "sollar_panels":
         suplier_model = SollarPanelsSuppliers
+    elif product == "inverters":
+        suplier_model = InvertersSuppliers
     else:
         raise ValueError("Неверный тип продукта")
 

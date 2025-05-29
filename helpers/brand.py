@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from db.models import BatteriesBrands, SollarPanelsBrands
+from db.models import BatteriesBrands, SollarPanelsBrands, InvertersBrands
 from typing import Optional
 
 async def get_or_create_brand(session: AsyncSession, brand_name: str, product: str = "batteries") -> int:
@@ -8,6 +8,8 @@ async def get_or_create_brand(session: AsyncSession, brand_name: str, product: s
         brand_model = BatteriesBrands
     elif product == "sollar_panels":
         brand_model = SollarPanelsBrands
+    elif product == "inverters":
+        brand_model = InvertersBrands
     else:
         raise ValueError("Неверный тип продукта")
     
@@ -47,6 +49,8 @@ async def get_brand_by_name(session: AsyncSession, brand_name: str, product: str
         brand_model = BatteriesBrands
     elif product == "sollar_panels":
         brand_model = SollarPanelsBrands
+    elif product == "inverters":
+        brand_model = InvertersBrands
     else:
         raise ValueError("Неверный тип продукта")
     

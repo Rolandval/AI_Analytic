@@ -1,6 +1,6 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from db.models import BatteriesSuppliers, SollarPanelsSuppliers
+from db.models import BatteriesSuppliers, SollarPanelsSuppliers, InvertersSuppliers
 from typing import Optional
 
 async def get_or_create_competitor(session: AsyncSession, suplier_name: str, product: str = "batteries") -> int:
@@ -14,6 +14,8 @@ async def get_or_create_competitor(session: AsyncSession, suplier_name: str, pro
         suplier_model = BatteriesSuppliers
     elif product == "sollar_panels":
         suplier_model = SollarPanelsSuppliers
+    elif product == "inverters":
+        suplier_model = InvertersSuppliers
     else:
         raise ValueError("Неверный тип продукта")
     
@@ -34,6 +36,8 @@ async def get_competitors_ids(session: AsyncSession, product: str = "batteries")
         suplier_model = BatteriesSuppliers
     elif product == "sollar_panels":
         suplier_model = SollarPanelsSuppliers
+    elif product == "inverters":
+        suplier_model = InvertersSuppliers
     else:
         raise ValueError("Неверный тип продукта")
     
@@ -61,6 +65,10 @@ async def get_competitors_name(func):
         return "DVI Klemy"
     if func.__name__ == "parse_sollar_panels_friends_solar":
         return "Friends Solar"
+    if func.__name__ == "parse_sollar_panels_solarflow":
+        return "Solarflow"
+    if func.__name__ == "parse_inverters_deye_ukraine":
+        return "Deye Ukraine"
 
 
     

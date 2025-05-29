@@ -150,3 +150,74 @@ class SollarPanelsSuppliers(Base):
     sollar_panels = relationship("SollarPanels", back_populates="supplier")
     sollar_panels_current = relationship("SollarPanelsCurrent", back_populates="supplier")
 
+
+
+class Inverters(Base):
+    __tablename__ = "inverters"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    price = Column(Float, nullable=False)
+    full_name = Column(String, nullable=False)
+    inverter_type = Column(String, nullable=False, default="gybrid")
+    generation = Column(String, nullable=False, default="4")
+    string_count = Column(Integer, nullable=False, default=0)
+    firmware = Column(String, nullable=False, default="")
+    power = Column(Float, nullable=False, default=0)
+    
+    brand_id = Column(Integer, ForeignKey('inverters_brands.id'), nullable=True)
+    supplier_id = Column(Integer, ForeignKey('inverters_suppliers.id'), nullable=True)
+    
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # ORM-зв'язки
+    brand = relationship("InvertersBrands", back_populates="inverters")
+    supplier = relationship("InvertersSuppliers", back_populates="inverters")
+
+
+class CurrentInverters(Base):
+    __tablename__ = "current_inverters"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    price = Column(Float, nullable=False)
+    full_name = Column(String, nullable=False)
+    inverter_type = Column(String, nullable=False, default="gybrid")
+    generation = Column(String, nullable=False, default="4")
+    string_count = Column(Integer, nullable=False, default=0)
+    firmware = Column(String, nullable=False, default="")
+    power = Column(Float, nullable=False, default=0)
+    
+    brand_id = Column(Integer, ForeignKey('inverters_brands.id'), nullable=True)
+    supplier_id = Column(Integer, ForeignKey('inverters_suppliers.id'), nullable=True)
+    
+    updated_at = Column(DateTime, default=datetime.utcnow)
+    
+    # ORM-зв'язки
+    brand = relationship("InvertersBrands", back_populates="current_inverters")
+    supplier = relationship("InvertersSuppliers", back_populates="current_inverters")
+
+
+class InvertersBrands(Base):
+    __tablename__ = "inverters_brands"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    
+    # ORM-зв'язки
+    inverters = relationship("Inverters", back_populates="brand")
+    current_inverters = relationship("CurrentInverters", back_populates="brand")
+
+
+class InvertersSuppliers(Base):
+    __tablename__ = "inverters_suppliers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    is_me = Column(Boolean, default=False)
+    is_supplier = Column(Boolean, default=False)
+    is_competitor = Column(Boolean, default=False)
+    
+    # ORM-зв'язки
+    inverters = relationship("Inverters", back_populates="supplier")
+    current_inverters = relationship("CurrentInverters", back_populates="supplier")
